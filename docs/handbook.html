@@ -36,6 +36,109 @@
     .badge.p1 { background: rgba(245,158,11,0.15); color: #f59e0b; }
     .badge.event { background: rgba(99,102,241,0.15); color: #818cf8; font-family: ui-monospace,SFMono-Regular,Menlo,monospace; }
   </style>
+
+  <script>
+    window.I18N_ZH = window.I18N_ZH || {};
+    window.I18N_ZH['handbook'] = {
+      'nav.getting-started':  '快速开始',
+      'nav.handbook':         '手册',
+      'nav.architecture':     '架构',
+      'nav.github':           'GitHub →',
+
+      'header.eyebrow':       '文档',
+      'header.title':         '手册',
+      'header.subtitle':      '每一个 hook · 每一个事件 · 每一个适配器 · 每一条命令。',
+
+      'toc.title':            '目录',
+      'toc.s1':               '§1 总览',
+      'toc.s2':               '§2 Hook 事件',
+      'toc.s3':               '§3 九个 Hook',
+      'toc.s4':               '§4 真实证据:真的能拦',
+      'toc.s5':               '§5 CLI 命令',
+      'toc.s6':               '§6 Manifest Schema',
+
+      's1.title':             '§1 总览',
+      's1.intro':             'Agent_hook 是三仓体系中的 hook 层:',
+      's1.bullet1-pre':       'Agent_skills',
+      's1.bullet1':           ' — 方法论:agent 如何思考(16 个 skill)',
+      's1.bullet2-pre':       'Agent_hook',
+      's1.bullet2':           ' — 强制:什么必须发生(9 个 hook)',
+      's1.bullet3-pre':       'Agent_mcp',
+      's1.bullet3':           ' — 上下文:agent 能接触什么(10 个 MCP)',
+      's1.outro':             '每个 hook 都是 Python 脚本,走 Claude Code 的 stdin/stdout/exit-2 协议。适配器把它翻译给 opencode / cursor / kimi(codex 暂无 hook 概念,跳过)。',
+
+      's2.title':             '§2 Hook 事件',
+      's2.intro':             '对齐 Claude Code 的 8 类 hook 事件:',
+      's2.h-event':           '事件',
+      's2.h-when':            '何时触发',
+      's2.h-return':          '返回值语义',
+      's2.pretooluse-when':   '任何工具调用之前(Write/Edit/Bash/...)',
+      's2.pretooluse-return': 'exit 2 = 拦截 · exit 0 + JSON = 标注',
+      's2.posttooluse-when':  '工具调用成功之后',
+      's2.posttooluse-return':'exit 0 + JSON = 副作用日志',
+      's2.usersubmit-when':   '用户发出消息时',
+      's2.usersubmit-return': 'JSON.prepend = 追加到 prompt 前',
+      's2.session-when':      '每次新对话开始',
+      's2.session-return':    'JSON.context = 注入上下文',
+      's2.stop-when':         'Agent 标记"完成"时',
+      's2.stop-return':       'JSON = 汇总展示给用户',
+      's2.subagent-when':     '子代理返回时',
+      's2.subagent-return':   'JSON.acceptance = ok | needs-review',
+      's2.notify-when':       '长任务等待输入',
+      's2.notify-return':     '副作用(如桌面通知)',
+      's2.compact-when':      '上下文压缩之前',
+      's2.compact-return':    '副作用(如快照存盘)',
+
+      's3.title':             '§3 九个 Hook',
+      's3.protect-what':      '功能:',
+      's3.protect-what-text': '拦截对 .env, .env.*, credentials, service-account.json, *.pem, *.key, .aws/credentials, .kube/config, SSH key, 已应用 migration 的写入。',
+      's3.protect-why':       '为何:',
+      's3.protect-why-text':  '一次错误写入 = secrets 永远进 git log。LLM 自以为"安全"时,prompt 约束失效。',
+      's3.protect-override':  '逃生口:',
+      's3.protect-override-text': 'AGENT_HOOK_ALLOW_SENSITIVE=/intentional/.env:/other/path',
+
+      's3.guard-what':        '功能:',
+      's3.guard-what-text':   '17 种危险模式 — rm -rf、git reset --hard、git push --force、curl|sh、mkfs.*、dd if=...of=/dev/sd*、chmod -R 777、DROP TABLE、fork bomb、原始设备重定向。',
+      's3.guard-conservative':'保守优先:',
+      's3.guard-conservative-text': '甚至 echo "rm -rf 是字符串" 也拦 — LLM 可能通过 eval 绕过。',
+      's3.guard-override':    '逃生口:',
+      's3.guard-override-text': 'AGENT_HOOK_BASH_YOLO=1',
+
+      's3.format-what':       '功能:',
+      's3.format-what-text':  '按后缀选 formatter:.ts/.tsx/.js/.jsx → prettier/biome;.py → ruff/black;.go → gofmt;.rs → rustfmt;.sh → shfmt。',
+      's3.format-graceful':   '优雅降级:',
+      's3.format-graceful-text': '没装 formatter 直接跳过。AGENT_HOOK_SKIP_FORMAT=1 关闭。',
+
+      's3.session-text':      '注入 git branch、最近 commit、脏改个数、AGENTS.md / CLAUDE.md / README.md 存在性、活跃 .sisyphus/plans/*.md、python 版本、平台信息。',
+
+      's3.final-text':        '报告变更文件(来自 git status)、未关闭的 TODO/FIXME/XXX/HACK、可选测试运行(AGENT_HOOK_FINAL_RUN_TESTS=1)。自动识别 pyproject.toml / package.json / Cargo.toml / go.mod。',
+
+      's3.prompt-text':       '在用户 prompt 前追加 <project-context> 块:分支、最近 commit、工作树统计、活跃计划。让 agent 别问能自己看的东西。',
+
+      's3.subagent-text':     '扫描子代理报告里的浅完成宣称("should work"、"did not run"、"not fully tested")与未完成标记(TODO、placeholder、stub)。命中返回 acceptance=needs-review。',
+
+      's3.notify-text':       '只在 macOS 上工作(用 osascript)。Agent 等待输入或完成长任务时触发 display notification。',
+
+      's3.compact-text':      '上下文压缩之前,把 {branch, last_commit, working_tree, plans, timestamp} 快照保存到 .sisyphus/snapshots/pre-compact-{timestamp}.json。方便恢复。',
+
+      's4.title':             '§4 真实证据:真的能拦',
+      's4.intro':             '真 node 加载生成的 opencode plugin,真 spawnSync 调 Python,真 exit-2:',
+      's4.outro':             '完整记录在仓内 docs/demo/E2E-DEMO.md(跨仓 demo 写在 Agent_skills 里)。',
+
+      's5.title':             '§5 CLI 命令',
+      's5.h-cmd':             '命令',
+      's5.h-does':            '作用',
+      's5.list-does':         '表格视图:9 个 hook × 4 个客户端的安装状态。',
+      's5.install-does':      '生成适配产物、写客户端配置、备份、加锚点。',
+      's5.uninstall-does':    '按锚点删除,拒绝非托管条目。',
+      's5.doctor-does':       '验证 manifest、检查 PATH 上的二进制、审计客户端配置一致性。',
+      's5.show-does':         '把 manifest 以 JSON 打印。',
+
+      's6.title':             '§6 Manifest Schema',
+      's6.intro':             '三仓共享同一份 schema(Agent_skills / Agent_hook / Agent_mcp)。每次加载都过 agent/lib/manifest.py 验证:',
+      's6.outro':             '拒收条件:字面 token(ghp_*, sk-*, AIza*)、未知 hook_events、缺客户端、错的 source.type。',
+    };
+  </script>
 </head>
 <body>
 
@@ -46,10 +149,10 @@
       <span class="font-semibold tracking-tight text-zinc-200 group-hover:text-amber-400 transition-colors">Agent_hook</span>
     </a>
     <div class="hidden md:flex items-center gap-6">
-      <a href="./getting-started.html" class="text-zinc-400 hover:text-amber-400 text-sm transition-colors">Getting Started</a>
-      <a href="./handbook.html" class="text-amber-400 text-sm font-medium">Handbook</a>
-      <a href="./architecture.html" class="text-zinc-400 hover:text-amber-400 text-sm transition-colors">Architecture</a>
-      <a href="https://github.com/zjgulai/Agent_hook" target="_blank" rel="noopener" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 rounded-md text-sm text-zinc-200 transition-colors">GitHub →</a>
+      <a href="./getting-started.html" class="text-zinc-400 hover:text-amber-400 text-sm transition-colors" data-i18n="nav.getting-started">Getting Started</a>
+      <a href="./handbook.html" class="text-amber-400 text-sm font-medium" data-i18n="nav.handbook">Handbook</a>
+      <a href="./architecture.html" class="text-zinc-400 hover:text-amber-400 text-sm transition-colors" data-i18n="nav.architecture">Architecture</a>
+      <a href="https://github.com/zjgulai/Agent_hook" target="_blank" rel="noopener" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 rounded-md text-sm text-zinc-200 transition-colors" data-i18n="nav.github">GitHub →</a>
       <button id="lang-toggle" onclick="window.i18nToggle()" class="px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 rounded-md text-sm text-zinc-300 transition-colors border border-zinc-700" aria-label="Toggle language">中文</button>
     </div>
   </div>
@@ -57,53 +160,53 @@
 
 <main class="pt-16 max-w-4xl mx-auto px-6 py-12 prose-custom">
 
-  <p class="text-amber-400 text-sm font-medium tracking-wider">DOCUMENTATION</p>
-  <h1 class="text-4xl md:text-5xl font-bold text-zinc-100 mb-4">The Handbook</h1>
-  <p class="text-xl text-zinc-400 mb-12">Every hook. Every event. Every adapter. Every command.</p>
+  <p class="text-amber-400 text-sm font-medium tracking-wider" data-i18n="header.eyebrow">DOCUMENTATION</p>
+  <h1 class="text-4xl md:text-5xl font-bold text-zinc-100 mb-4" data-i18n="header.title">The Handbook</h1>
+  <p class="text-xl text-zinc-400 mb-12" data-i18n="header.subtitle">Every hook. Every event. Every adapter. Every command.</p>
 
   <div class="toc">
-    <strong class="text-zinc-200">Contents</strong>
+    <strong class="text-zinc-200" data-i18n="toc.title">Contents</strong>
     <ul>
-      <li><a href="#overview">§1 Overview</a></li>
-      <li><a href="#events">§2 Hook Events</a></li>
-      <li><a href="#hooks">§3 The 9 Hooks</a></li>
-      <li><a href="#evidence">§4 Evidence: real blocking</a></li>
-      <li><a href="#commands">§5 CLI Commands</a></li>
-      <li><a href="#manifest">§6 Manifest Schema</a></li>
+      <li><a href="#overview" data-i18n="toc.s1">§1 Overview</a></li>
+      <li><a href="#events" data-i18n="toc.s2">§2 Hook Events</a></li>
+      <li><a href="#hooks" data-i18n="toc.s3">§3 The 9 Hooks</a></li>
+      <li><a href="#evidence" data-i18n="toc.s4">§4 Evidence: real blocking</a></li>
+      <li><a href="#commands" data-i18n="toc.s5">§5 CLI Commands</a></li>
+      <li><a href="#manifest" data-i18n="toc.s6">§6 Manifest Schema</a></li>
     </ul>
   </div>
 
   <section id="overview">
-    <h2>§1 Overview</h2>
-    <p>Agent_hook is the hook layer of a three-repo system:</p>
+    <h2 data-i18n="s1.title">§1 Overview</h2>
+    <p data-i18n="s1.intro">Agent_hook is the hook layer of a three-repo system:</p>
     <ul>
-      <li><a href="https://github.com/zjgulai/Agent_skills">Agent_skills</a> — <em>methodology</em>: how the agent thinks (16 skills)</li>
-      <li><strong class="text-zinc-200">Agent_hook</strong> — <em>enforcement</em>: what must happen (9 hooks)</li>
-      <li><a href="https://github.com/zjgulai/Agent_mcp">Agent_mcp</a> — <em>context</em>: what the agent can touch (10 MCPs)</li>
+      <li><a href="https://github.com/zjgulai/Agent_skills" data-i18n="s1.bullet1-pre">Agent_skills</a><span data-i18n="s1.bullet1"> — methodology: how the agent thinks (16 skills)</span></li>
+      <li><strong class="text-zinc-200" data-i18n="s1.bullet2-pre">Agent_hook</strong><span data-i18n="s1.bullet2"> — enforcement: what must happen (9 hooks)</span></li>
+      <li><a href="https://github.com/zjgulai/Agent_mcp" data-i18n="s1.bullet3-pre">Agent_mcp</a><span data-i18n="s1.bullet3"> — context: what the agent can touch (10 MCPs)</span></li>
     </ul>
-    <p>Each hook is a Python script that follows the Claude Code stdin/stdout/exit-2 protocol. Adapters translate it to opencode / cursor / kimi (codex skipped — no hook concept yet).</p>
+    <p data-i18n="s1.outro">Each hook is a Python script following the Claude Code stdin/stdout/exit-2 protocol. Adapters translate it to opencode / cursor / kimi (codex skipped — no hook concept yet).</p>
   </section>
 
   <section id="events">
-    <h2>§2 Hook Events</h2>
-    <p>Following the 8 Claude Code hook events:</p>
+    <h2 data-i18n="s2.title">§2 Hook Events</h2>
+    <p data-i18n="s2.intro">Following the 8 Claude Code hook events:</p>
     <table>
-      <thead><tr><th>Event</th><th>When it fires</th><th>Return semantics</th></tr></thead>
+      <thead><tr><th data-i18n="s2.h-event">Event</th><th data-i18n="s2.h-when">When it fires</th><th data-i18n="s2.h-return">Return semantics</th></tr></thead>
       <tbody>
-        <tr><td><code>PreToolUse</code></td><td>Before any tool call (Write/Edit/Bash/...)</td><td>exit 2 = block · exit 0 + JSON = annotate</td></tr>
-        <tr><td><code>PostToolUse</code></td><td>After a tool call succeeded</td><td>exit 0 + JSON = side-effect log</td></tr>
-        <tr><td><code>UserPromptSubmit</code></td><td>When the user sends a message</td><td>JSON.prepend = prepend to prompt</td></tr>
-        <tr><td><code>SessionStart</code></td><td>Each new conversation</td><td>JSON.context = inject context</td></tr>
-        <tr><td><code>Stop</code></td><td>Agent says "done"</td><td>JSON = summary surfaced to user</td></tr>
-        <tr><td><code>SubagentStop</code></td><td>A subagent returns</td><td>JSON.acceptance = ok | needs-review</td></tr>
-        <tr><td><code>Notification</code></td><td>Long task waiting for input</td><td>side-effect (e.g. desktop notify)</td></tr>
-        <tr><td><code>PreCompact</code></td><td>Just before context compaction</td><td>side-effect (e.g. snapshot to disk)</td></tr>
+        <tr><td><code>PreToolUse</code></td><td data-i18n="s2.pretooluse-when">Before any tool call (Write/Edit/Bash/...)</td><td data-i18n="s2.pretooluse-return">exit 2 = block · exit 0 + JSON = annotate</td></tr>
+        <tr><td><code>PostToolUse</code></td><td data-i18n="s2.posttooluse-when">After a tool call succeeded</td><td data-i18n="s2.posttooluse-return">exit 0 + JSON = side-effect log</td></tr>
+        <tr><td><code>UserPromptSubmit</code></td><td data-i18n="s2.usersubmit-when">When the user sends a message</td><td data-i18n="s2.usersubmit-return">JSON.prepend = prepend to prompt</td></tr>
+        <tr><td><code>SessionStart</code></td><td data-i18n="s2.session-when">Each new conversation</td><td data-i18n="s2.session-return">JSON.context = inject context</td></tr>
+        <tr><td><code>Stop</code></td><td data-i18n="s2.stop-when">Agent says "done"</td><td data-i18n="s2.stop-return">JSON = summary surfaced to user</td></tr>
+        <tr><td><code>SubagentStop</code></td><td data-i18n="s2.subagent-when">A subagent returns</td><td data-i18n="s2.subagent-return">JSON.acceptance = ok | needs-review</td></tr>
+        <tr><td><code>Notification</code></td><td data-i18n="s2.notify-when">Long task waiting for input</td><td data-i18n="s2.notify-return">side-effect (e.g. desktop notify)</td></tr>
+        <tr><td><code>PreCompact</code></td><td data-i18n="s2.compact-when">Just before context compaction</td><td data-i18n="s2.compact-return">side-effect (e.g. snapshot to disk)</td></tr>
       </tbody>
     </table>
   </section>
 
   <section id="hooks">
-    <h2>§3 The 9 Hooks</h2>
+    <h2 data-i18n="s3.title">§3 The 9 Hooks</h2>
 
     <div class="hook-card">
       <h3>protect-sensitive-files</h3>
@@ -111,9 +214,9 @@
         <span class="badge p0">P0</span>
         <span class="badge event">PreToolUse</span>
       </div>
-      <p><strong class="text-zinc-200">What.</strong> Blocks writes to <code>.env</code>, <code>.env.*</code>, <code>credentials</code>, <code>service-account.json</code>, <code>*.pem</code>, <code>*.key</code>, <code>.aws/credentials</code>, <code>.kube/config</code>, SSH keys, applied migrations.</p>
-      <p><strong class="text-zinc-200">Why.</strong> One bad write = leaked secrets in <code>git log</code> forever. Prompt-only rules fail when the LLM "knows" it's safe.</p>
-      <p><strong class="text-zinc-200">Override.</strong> <code>AGENT_HOOK_ALLOW_SENSITIVE=/intentional/.env:/other/path</code>.</p>
+      <p><strong class="text-zinc-200" data-i18n="s3.protect-what">What.</strong> <span data-i18n="s3.protect-what-text">Blocks writes to <code>.env</code>, <code>.env.*</code>, <code>credentials</code>, <code>service-account.json</code>, <code>*.pem</code>, <code>*.key</code>, <code>.aws/credentials</code>, <code>.kube/config</code>, SSH keys, applied migrations.</span></p>
+      <p><strong class="text-zinc-200" data-i18n="s3.protect-why">Why.</strong> <span data-i18n="s3.protect-why-text">One bad write = leaked secrets in <code>git log</code> forever. Prompt-only rules fail when the LLM "knows" it's safe.</span></p>
+      <p><strong class="text-zinc-200" data-i18n="s3.protect-override">Override.</strong> <span data-i18n="s3.protect-override-text"><code>AGENT_HOOK_ALLOW_SENSITIVE=/intentional/.env:/other/path</code>.</span></p>
     </div>
 
     <div class="hook-card">
@@ -122,9 +225,9 @@
         <span class="badge p0">P0</span>
         <span class="badge event">PreToolUse · Bash</span>
       </div>
-      <p><strong class="text-zinc-200">What.</strong> 17 dangerous patterns: <code>rm -rf</code>, <code>git reset --hard</code>, <code>git push --force</code>, <code>curl | sh</code>, <code>mkfs.*</code>, <code>dd if=...of=/dev/sd*</code>, <code>chmod -R 777</code>, <code>DROP TABLE</code>, fork bombs, raw-device redirects.</p>
-      <p><strong class="text-zinc-200">Conservative bias.</strong> Even <code>echo 'rm -rf is in a string'</code> blocks — LLM might bypass via <code>eval</code>.</p>
-      <p><strong class="text-zinc-200">Override.</strong> <code>AGENT_HOOK_BASH_YOLO=1</code>.</p>
+      <p><strong class="text-zinc-200" data-i18n="s3.guard-what">What.</strong> <span data-i18n="s3.guard-what-text">17 dangerous patterns: <code>rm -rf</code>, <code>git reset --hard</code>, <code>git push --force</code>, <code>curl | sh</code>, <code>mkfs.*</code>, <code>dd if=...of=/dev/sd*</code>, <code>chmod -R 777</code>, <code>DROP TABLE</code>, fork bombs, raw-device redirects.</span></p>
+      <p><strong class="text-zinc-200" data-i18n="s3.guard-conservative">Conservative bias.</strong> <span data-i18n="s3.guard-conservative-text">Even <code>echo 'rm -rf is in a string'</code> blocks — LLM might bypass via <code>eval</code>.</span></p>
+      <p><strong class="text-zinc-200" data-i18n="s3.guard-override">Override.</strong> <span data-i18n="s3.guard-override-text"><code>AGENT_HOOK_BASH_YOLO=1</code>.</span></p>
     </div>
 
     <div class="hook-card">
@@ -133,8 +236,8 @@
         <span class="badge p0">P0</span>
         <span class="badge event">PostToolUse · Write/Edit</span>
       </div>
-      <p><strong class="text-zinc-200">What.</strong> Picks formatter by suffix: <code>.ts/.tsx/.js/.jsx</code> → prettier/biome; <code>.py</code> → ruff/black; <code>.go</code> → gofmt; <code>.rs</code> → rustfmt; <code>.sh</code> → shfmt.</p>
-      <p><strong class="text-zinc-200">Graceful.</strong> Skips silently if no formatter installed. <code>AGENT_HOOK_SKIP_FORMAT=1</code> to disable.</p>
+      <p><strong class="text-zinc-200" data-i18n="s3.format-what">What.</strong> <span data-i18n="s3.format-what-text">Picks formatter by suffix: <code>.ts/.tsx/.js/.jsx</code> → prettier/biome; <code>.py</code> → ruff/black; <code>.go</code> → gofmt; <code>.rs</code> → rustfmt; <code>.sh</code> → shfmt.</span></p>
+      <p><strong class="text-zinc-200" data-i18n="s3.format-graceful">Graceful.</strong> <span data-i18n="s3.format-graceful-text">Skips silently if no formatter installed. <code>AGENT_HOOK_SKIP_FORMAT=1</code> to disable.</span></p>
     </div>
 
     <div class="hook-card">
@@ -143,7 +246,7 @@
         <span class="badge p0">P0</span>
         <span class="badge event">SessionStart</span>
       </div>
-      <p>Injects git branch, last commit, dirty count, <code>AGENTS.md</code> / <code>CLAUDE.md</code> / <code>README.md</code> presence, active <code>.sisyphus/plans/*.md</code>, python version, platform.</p>
+      <p data-i18n="s3.session-text">Injects git branch, last commit, dirty count, <code>AGENTS.md</code> / <code>CLAUDE.md</code> / <code>README.md</code> presence, active <code>.sisyphus/plans/*.md</code>, python version, platform.</p>
     </div>
 
     <div class="hook-card">
@@ -152,7 +255,7 @@
         <span class="badge p0">P0</span>
         <span class="badge event">Stop</span>
       </div>
-      <p>Reports changed files (from <code>git status</code>), open TODO/FIXME/XXX/HACK, optional test run (<code>AGENT_HOOK_FINAL_RUN_TESTS=1</code>). Auto-detects pyproject.toml / package.json / Cargo.toml / go.mod.</p>
+      <p data-i18n="s3.final-text">Reports changed files (from <code>git status</code>), open TODO/FIXME/XXX/HACK, optional test run (<code>AGENT_HOOK_FINAL_RUN_TESTS=1</code>). Auto-detects pyproject.toml / package.json / Cargo.toml / go.mod.</p>
     </div>
 
     <div class="hook-card">
@@ -161,7 +264,7 @@
         <span class="badge p1">P1</span>
         <span class="badge event">UserPromptSubmit</span>
       </div>
-      <p>Prepends a <code>&lt;project-context&gt;</code> block: branch, last commit, working-tree stats, active plans. Stops the agent from asking what it could just inspect.</p>
+      <p data-i18n="s3.prompt-text">Prepends a <code>&lt;project-context&gt;</code> block: branch, last commit, working-tree stats, active plans. Stops the agent from asking what it could just inspect.</p>
     </div>
 
     <div class="hook-card">
@@ -170,7 +273,7 @@
         <span class="badge p1">P1</span>
         <span class="badge event">SubagentStop</span>
       </div>
-      <p>Scans the subagent's report for shallow-completion claims (<code>"should work"</code>, <code>"did not run"</code>, <code>"not fully tested"</code>) and incomplete markers (<code>TODO</code>, <code>placeholder</code>, <code>stub</code>). Returns <code>acceptance=needs-review</code> if found.</p>
+      <p data-i18n="s3.subagent-text">Scans the subagent's report for shallow-completion claims (<code>"should work"</code>, <code>"did not run"</code>, <code>"not fully tested"</code>) and incomplete markers (<code>TODO</code>, <code>placeholder</code>, <code>stub</code>). Returns <code>acceptance=needs-review</code> if found.</p>
     </div>
 
     <div class="hook-card">
@@ -179,7 +282,7 @@
         <span class="badge p1">P1</span>
         <span class="badge event">Notification</span>
       </div>
-      <p>macOS only (uses <code>osascript</code>). Fires <code>display notification</code> when the agent waits for input or finishes a long task.</p>
+      <p data-i18n="s3.notify-text">macOS only (uses <code>osascript</code>). Fires <code>display notification</code> when the agent waits for input or finishes a long task.</p>
     </div>
 
     <div class="hook-card">
@@ -188,13 +291,13 @@
         <span class="badge p1">P1</span>
         <span class="badge event">PreCompact</span>
       </div>
-      <p>Before context compaction, snapshots <code>{branch, last_commit, working_tree, plans, timestamp}</code> to <code>.sisyphus/snapshots/pre-compact-{timestamp}.json</code>. Recovery-friendly.</p>
+      <p data-i18n="s3.compact-text">Before context compaction, snapshots <code>{branch, last_commit, working_tree, plans, timestamp}</code> to <code>.sisyphus/snapshots/pre-compact-{timestamp}.json</code>. Recovery-friendly.</p>
     </div>
   </section>
 
   <section id="evidence">
-    <h2>§4 Evidence: real blocking</h2>
-    <p>Real <code>node</code> loading the generated opencode plugin, real <code>spawnSync</code> of Python, real exit-2:</p>
+    <h2 data-i18n="s4.title">§4 Evidence: real blocking</h2>
+    <p data-i18n="s4.intro">Real <code>node</code> loading the generated opencode plugin, real <code>spawnSync</code> of Python, real exit-2:</p>
 <pre class="cmd-block rounded p-4 mt-3"><code class="language-bash">$ node --input-type=module -e '
   const mod = await import("/Users/lute/.config/opencode/plugins/agent-hook-protect-sensitive-files.js");
   const r1 = await mod.default.onPreToolUse({
@@ -209,26 +312,26 @@
            — matches exact name '.env'.
            Override via AGENT_HOOK_ALLOW_SENSITIVE=path1:path2 if intentional."
 }</code></pre>
-    <p>Recorded in repo at <code>docs/demo/E2E-DEMO.md</code> (in <a href="https://github.com/zjgulai/Agent_skills">Agent_skills</a> for the cross-repo demo).</p>
+    <p data-i18n="s4.outro">Recorded in repo at <code>docs/demo/E2E-DEMO.md</code> (in <a href="https://github.com/zjgulai/Agent_skills">Agent_skills</a> for the cross-repo demo).</p>
   </section>
 
   <section id="commands">
-    <h2>§5 CLI Commands</h2>
+    <h2 data-i18n="s5.title">§5 CLI Commands</h2>
     <table>
-      <thead><tr><th>Command</th><th>Does</th></tr></thead>
+      <thead><tr><th data-i18n="s5.h-cmd">Command</th><th data-i18n="s5.h-does">Does</th></tr></thead>
       <tbody>
-        <tr><td><code>agent-hook list</code></td><td>Tabular view of all 9 hooks × 4 client install states.</td></tr>
-        <tr><td><code>agent-hook install &lt;name&gt; --client all|opencode|cursor|kimi</code></td><td>Generate adapter artifact, write client config, backup, anchor.</td></tr>
-        <tr><td><code>agent-hook uninstall &lt;name&gt; --client all|...</code></td><td>Remove by anchor. Refuse non-managed entries.</td></tr>
-        <tr><td><code>agent-hook doctor</code></td><td>Validate manifests, check binaries on PATH, audit client config consistency.</td></tr>
-        <tr><td><code>agent-hook show &lt;name&gt;</code></td><td>Print manifest as JSON.</td></tr>
+        <tr><td><code>agent-hook list</code></td><td data-i18n="s5.list-does">Tabular view of all 9 hooks × 4 client install states.</td></tr>
+        <tr><td><code>agent-hook install &lt;name&gt; --client all|opencode|cursor|kimi</code></td><td data-i18n="s5.install-does">Generate adapter artifact, write client config, backup, anchor.</td></tr>
+        <tr><td><code>agent-hook uninstall &lt;name&gt; --client all|...</code></td><td data-i18n="s5.uninstall-does">Remove by anchor. Refuse non-managed entries.</td></tr>
+        <tr><td><code>agent-hook doctor</code></td><td data-i18n="s5.doctor-does">Validate manifests, check binaries on PATH, audit client config consistency.</td></tr>
+        <tr><td><code>agent-hook show &lt;name&gt;</code></td><td data-i18n="s5.show-does">Print manifest as JSON.</td></tr>
       </tbody>
     </table>
   </section>
 
   <section id="manifest">
-    <h2>§6 Manifest Schema</h2>
-    <p>Identical schema across all 3 source repos (Agent_skills/Agent_hook/Agent_mcp). Validated by <code>agent/lib/manifest.py</code> on every load:</p>
+    <h2 data-i18n="s6.title">§6 Manifest Schema</h2>
+    <p data-i18n="s6.intro">Identical schema across all 3 source repos (Agent_skills/Agent_hook/Agent_mcp). Validated by <code>agent/lib/manifest.py</code> on every load:</p>
 <pre class="cmd-block rounded p-4 mt-3"><code class="language-yaml">kind: hook                        # required: skill | hook | mcp
 name: protect-sensitive-files     # required: [a-z][a-z0-9-]{1,63}
 version: 0.1.0                    # required: semver
@@ -261,7 +364,7 @@ requires:
   binaries: [python3]
 
 triggers: [sensitive file, .env, secret protection]</code></pre>
-    <p>Reject conditions: literal token strings (<code>ghp_*</code>, <code>sk-*</code>, <code>AIza*</code>), unknown <code>hook_events</code>, missing client, wrong source type.</p>
+    <p data-i18n="s6.outro">Reject conditions: literal token strings (<code>ghp_*</code>, <code>sk-*</code>, <code>AIza*</code>), unknown <code>hook_events</code>, missing client, wrong source type.</p>
   </section>
 
 </main>

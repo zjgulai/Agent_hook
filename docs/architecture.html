@@ -37,6 +37,35 @@
       'header.eyebrow':            '文档',
       'header.title':              '架构',
       'header.subtitle':           '一份 Python 脚本 · 四种客户端形态 · 锚点 + 备份保证可逆',
+      'h.map':                     '自顶向下',
+      'h.matrix':                  '四客户端兼容矩阵',
+      'h.opencode':                'opencode 适配器(最有意思的一个)',
+      'h.cursor':                  'cursor 适配器(降级)',
+      'h.kimi':                    'kimi 适配器',
+      'h.reversibility':           '可逆性保证',
+      'h.tests':                   '测试覆盖',
+      'h.why':                     '为什么这样设计',
+      'cursor.intro':              'Cursor 没有原生 hook —— 只有 Rule(永远生效的 system prompt)。我们可以把 *部分* hook 行为表达成软约束,但永远无法强制:',
+      'cursor.b1-pre':             '可映射成 Rule:',
+      'cursor.b1':                 ' protect-sensitive-files(不要写 <X>)、guard-bash(不要跑 <Y>)、session-context-injector(始终记住 <Z>)。',
+      'cursor.b2-pre':             '无法降级:',
+      'cursor.b2':                 ' post-edit-format(Rule 无法触发命令)、final-verify(Rule 无法在 Stop 时跑代码)、pre-compact-save(cursor 无 PreCompact 概念)、subagent-acceptance(无子代理返回值解析)、notify-on-idle(无 Notification 事件)。',
+      'kimi.intro':                'kimi 在 ~/.kimi/config.toml 里有 hooks=[] 数组。我们追加形如下面的条目:',
+      'rev.intro':                 '每次写客户端配置都遵循同一协议:',
+      'rev.b1':                    '改之前 cp <target> <target>.bak.{timestamp}。',
+      'rev.b2':                    '写入新内容,带 managed-by: agent-hook 锚点。',
+      'rev.b3':                    'prune_backups(keep=5),不让备份无限堆。',
+      'rev.b4':                    '卸载时检查锚点 —— 拒绝删除不是我们的条目(如用户自己写的 plugin)。',
+      'tests.b1-pre':              '28 个 schema 测试',
+      'tests.b1':                  ' —— manifest 验证、必填字段、hook_events 白名单、明文 token 拒收。',
+      'tests.b2-pre':              '39 个行为测试',
+      'tests.b2':                  ' —— 每个 hook 都通过 CLI 子进程跑 stdin/stdout 端到端。',
+      'tests.b3-pre':              '14 个 adapter 测试',
+      'tests.b3':                  ' —— 4 个 adapter 的 install / uninstall 往返、兄弟保护、锚点拒删。',
+      'tests.b4-pre':              '总计:81 个测试,全绿',
+      'tests.b4':                  '。',
+      'why.text':                  'Prompt-only 约束在 LLM"自以为知道"时会失败。运行时**被迫调用**、并返回 exit 2 的 hook 代码,是唯一的确定性机制。Agent_hook 的赌注是:每个团队最终会走到同一结论,我们替你省样板。',
+      'opencode.intro':            '我们在 ~/.config/opencode/plugins/agent-hook-<name>.js 生成一个 JS plugin 文件。它是一个 thin wrapper,每次事件 spawn 真实 Python,event JSON 通过 stdin 传递:',
     };
   </script>
 </head>
@@ -64,7 +93,7 @@
   <h1 class="text-4xl md:text-5xl font-bold text-zinc-100 mb-4" data-i18n="header.title">Architecture</h1>
   <p class="text-xl text-zinc-400 mb-12" data-i18n="header.subtitle">One Python script · four client shapes · anchor + backup keep it reversible.</p>
 
-  <h2>Top-down map</h2>
+  <h2 data-i18n="h.map">Top-down map</h2>
   <pre class="ascii">┌─────────────────────────────────────────────────────────────────────┐
 │  Agent_hook (this repo)                                             │
 │                                                                     │
@@ -90,7 +119,7 @@
   plugins/                   (no-op)       rules/             config.toml
   agent-hook-&lt;name&gt;.js                    agent-hook-&lt;name&gt;.mdc  hooks=[...]</pre>
 
-  <h2>The 4-client compatibility matrix</h2>
+  <h2 data-i18n="h.matrix">The 4-client compatibility matrix</h2>
   <table>
     <thead><tr><th>Hook event</th><th>opencode</th><th>codex</th><th>cursor</th><th>kimi</th></tr></thead>
     <tbody>
@@ -106,8 +135,8 @@
     </tbody>
   </table>
 
-  <h2>The opencode adapter (the most interesting)</h2>
-  <p>For opencode we generate a JS plugin file at <code>~/.config/opencode/plugins/agent-hook-&lt;name&gt;.js</code>. The JS plugin acts as a thin wrapper that spawns the real Python on every event, passing event JSON via stdin:</p>
+  <h2 data-i18n="h.opencode">The opencode adapter (the most interesting)</h2>
+  <p data-i18n-html="opencode.intro">For opencode we generate a JS plugin file at <code>~/.config/opencode/plugins/agent-hook-&lt;name&gt;.js</code>. The JS plugin acts as a thin wrapper that spawns the real Python on every event, passing event JSON via stdin:</p>
 <pre class="cmd-block rounded p-4 mt-3"><code class="language-javascript">// managed-by: agent-hook · protect-sensitive-files · 2026-05-16T...
 // Source: /Users/lute/project/Agent/Agent_hook/registry/protect-sensitive-files/source/hook.py
 import { spawnSync } from "node:child_process";
@@ -133,15 +162,15 @@ export async function onPreToolUse({ tool, parameters }) {
   return res.blocked ? { block: true, reason: res.stderr } : res.payload;
 }</code></pre>
 
-  <h2>The cursor adapter (degradation)</h2>
-  <p>Cursor has no native hooks — only Rules (always-applied system prompts). We can express <em>some</em> hook behaviors as soft constraints, but never enforce them:</p>
+  <h2 data-i18n="h.cursor">The cursor adapter (degradation)</h2>
+  <p data-i18n="cursor.intro">Cursor has no native hooks — only Rules (always-applied system prompts). We can express <em>some</em> hook behaviors as soft constraints, but never enforce them:</p>
   <ul>
-    <li><strong class="text-zinc-200">Mappable to Rule:</strong> protect-sensitive-files (don't write &lt;X&gt;), guard-bash (don't run &lt;Y&gt;), session-context-injector (always remember &lt;Z&gt;).</li>
-    <li><strong class="text-zinc-200">Cannot degrade:</strong> post-edit-format (Rule can't trigger a command), final-verify (Rule can't run code at Stop), pre-compact-save (no PreCompact concept in cursor), subagent-acceptance (no subagent return-value parsing), notify-on-idle (no Notification event).</li>
+    <li><strong class="text-zinc-200" data-i18n="cursor.b1-pre">Mappable to Rule:</strong><span data-i18n="cursor.b1"> protect-sensitive-files (don't write &lt;X&gt;), guard-bash (don't run &lt;Y&gt;), session-context-injector (always remember &lt;Z&gt;).</span></li>
+    <li><strong class="text-zinc-200" data-i18n="cursor.b2-pre">Cannot degrade:</strong><span data-i18n="cursor.b2"> post-edit-format (Rule can't trigger a command), final-verify (Rule can't run code at Stop), pre-compact-save (no PreCompact concept in cursor), subagent-acceptance (no subagent return-value parsing), notify-on-idle (no Notification event).</span></li>
   </ul>
 
-  <h2>The kimi adapter</h2>
-  <p>kimi has a <code>hooks=[]</code> array in <code>~/.kimi/config.toml</code>. We append entries like:</p>
+  <h2 data-i18n="h.kimi">The kimi adapter</h2>
+  <p data-i18n-html="kimi.intro">kimi has a <code>hooks=[]</code> array in <code>~/.kimi/config.toml</code>. We append entries like:</p>
 <pre class="cmd-block rounded p-4 mt-3"><code class="language-toml">[[hooks]]
 name = "protect-sensitive-files"
 events = ["PreToolUse"]
@@ -149,25 +178,25 @@ matchers = ["Write", "Edit", "MultiEdit"]
 command = ["/usr/bin/python3", "/path/to/registry/protect-sensitive-files/source/hook.py"]
 managed_by = "agent-hook"</code></pre>
 
-  <h2>Reversibility guarantees</h2>
-  <p>Every write to a client config follows the same protocol:</p>
+  <h2 data-i18n="h.reversibility">Reversibility guarantees</h2>
+  <p data-i18n="rev.intro">Every write to a client config follows the same protocol:</p>
   <ol>
-    <li><code>cp &lt;target&gt; &lt;target&gt;.bak.{timestamp}</code> before any change.</li>
-    <li>Write the new content with a <code>managed-by: agent-hook</code> anchor.</li>
-    <li><code>prune_backups(keep=5)</code> so backups don't accumulate forever.</li>
-    <li>On uninstall, check the anchor — refuse to delete entries that aren't ours (e.g. user-written plugins).</li>
+    <li data-i18n-html="rev.b1"><code>cp &lt;target&gt; &lt;target&gt;.bak.{timestamp}</code> before any change.</li>
+    <li data-i18n-html="rev.b2">Write the new content with a <code>managed-by: agent-hook</code> anchor.</li>
+    <li data-i18n-html="rev.b3"><code>prune_backups(keep=5)</code> so backups don't accumulate forever.</li>
+    <li data-i18n="rev.b4">On uninstall, check the anchor — refuse to delete entries that aren't ours (e.g. user-written plugins).</li>
   </ol>
 
-  <h2>Test coverage</h2>
+  <h2 data-i18n="h.tests">Test coverage</h2>
   <ul>
-    <li><strong class="text-zinc-200">28 schema tests</strong> — manifest validation, required fields, hook_events whitelist, secret-literal rejection.</li>
-    <li><strong class="text-zinc-200">39 behavior tests</strong> — every hook tested end-to-end with stdin/stdout via CLI subprocess.</li>
-    <li><strong class="text-zinc-200">14 adapter tests</strong> — install / uninstall round-trips for each of the 4 adapters, sibling protection, anchor refusal.</li>
-    <li><strong class="text-zinc-200">Total: 81 tests, all green</strong>.</li>
+    <li><strong class="text-zinc-200" data-i18n="tests.b1-pre">28 schema tests</strong><span data-i18n="tests.b1"> — manifest validation, required fields, hook_events whitelist, secret-literal rejection.</span></li>
+    <li><strong class="text-zinc-200" data-i18n="tests.b2-pre">39 behavior tests</strong><span data-i18n="tests.b2"> — every hook tested end-to-end with stdin/stdout via CLI subprocess.</span></li>
+    <li><strong class="text-zinc-200" data-i18n="tests.b3-pre">14 adapter tests</strong><span data-i18n="tests.b3"> — install / uninstall round-trips for each of the 4 adapters, sibling protection, anchor refusal.</span></li>
+    <li><strong class="text-zinc-200" data-i18n="tests.b4-pre">Total: 81 tests, all green</strong><span data-i18n="tests.b4">.</span></li>
   </ul>
 
-  <h2>Why this shape</h2>
-  <p>Prompt-only enforcement fails when the LLM <em>thinks</em> it knows better. Hook code that the runtime is forced to call before the destructive action — and that returns <code>exit 2</code> — is the only deterministic mechanism. The bet of Agent_hook is that every team will arrive at this same conclusion, and we can save them the boilerplate.</p>
+  <h2 data-i18n="h.why">Why this shape</h2>
+  <p data-i18n-html="why.text">Prompt-only enforcement fails when the LLM <em>thinks</em> it knows better. Hook code that the runtime is forced to call before the destructive action — and that returns <code>exit 2</code> — is the only deterministic mechanism. The bet of Agent_hook is that every team will arrive at this same conclusion, and we can save them the boilerplate.</p>
 
 </main>
 
