@@ -1,0 +1,30 @@
+kind: hook
+name: prompt-context-enricher
+version: 0.1.0
+description: TODO 20+ char description. Block X on PreToolUse(Y) when condition Z. Provides AGENT_HOOK_prompt-context-enricher_OVERRIDE escape hatch.
+domain: code-quality
+priority: P1
+
+compatibility:
+  opencode: native
+  codex: unsupported
+  cursor: adapter
+  kimi: adapter
+
+source:
+  type: local
+  path: registry/prompt-context-enricher/source/
+
+hook_events:
+  - UserPromptSubmit
+
+matchers: []
+
+triggers:
+  - TODO
+
+requires:
+  binaries: [python3]
+
+links:
+  docs: https://code.claude.com/docs/en/hooks

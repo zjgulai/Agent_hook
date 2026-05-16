@@ -1,0 +1,18 @@
+# Build artefacts
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Local env / secrets
+.env
+.env.local
+
+# OS noise
+.DS_Store
+
+# Backups created by adapters when writing client configs
+*.bak.[0-9]*
+
+# Local virtualenv
+.venv/
+venv/

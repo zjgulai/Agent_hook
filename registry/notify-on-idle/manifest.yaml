@@ -1,0 +1,30 @@
+kind: hook
+name: notify-on-idle
+version: 0.1.0
+description: TODO 20+ char description. Block X on PreToolUse(Y) when condition Z. Provides AGENT_HOOK_notify-on-idle_OVERRIDE escape hatch.
+domain: code-quality
+priority: P1
+
+compatibility:
+  opencode: native
+  codex: unsupported
+  cursor: adapter
+  kimi: adapter
+
+source:
+  type: local
+  path: registry/notify-on-idle/source/
+
+hook_events:
+  - Notification
+
+matchers: []
+
+triggers:
+  - TODO
+
+requires:
+  binaries: [python3]
+
+links:
+  docs: https://code.claude.com/docs/en/hooks

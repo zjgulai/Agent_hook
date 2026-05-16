@@ -1,0 +1,29 @@
+kind: hook
+name: session-context-injector
+version: 0.1.0
+description: At SessionStart inject project context (git branch, last commit, dirty count, AGENTS.md/CLAUDE.md presence, sisyphus plans, python/platform) so the agent boots with a clear picture instead of starting blind.
+domain: meta
+priority: P0
+
+compatibility:
+  opencode: native
+  codex: unsupported
+  cursor: adapter
+  kimi: adapter
+
+source:
+  type: local
+  path: registry/session-context-injector/source/
+
+hook_events:
+  - SessionStart
+
+triggers:
+  - session start
+  - boot context
+
+requires:
+  binaries: [python3, git]
+
+links:
+  docs: https://code.claude.com/docs/en/hooks

@@ -1,0 +1,36 @@
+kind: hook
+name: post-edit-format
+version: 0.1.0
+description: After Write/Edit/MultiEdit, auto-run the project's formatter (prettier, biome, ruff, black, gofmt, rustfmt, shfmt) on the touched file based on suffix. Skip silently if no formatter is installed. Override AGENT_HOOK_SKIP_FORMAT=1.
+domain: code-quality
+priority: P0
+
+compatibility:
+  opencode: native
+  codex: unsupported
+  cursor: unsupported
+  kimi: adapter
+
+source:
+  type: local
+  path: registry/post-edit-format/source/
+
+hook_events:
+  - PostToolUse
+
+matchers:
+  - "Write"
+  - "Edit"
+  - "MultiEdit"
+
+triggers:
+  - auto format
+  - prettier
+  - ruff
+  - gofmt
+
+requires:
+  binaries: [python3]
+
+links:
+  docs: https://code.claude.com/docs/en/hooks-guide

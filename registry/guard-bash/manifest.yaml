@@ -1,0 +1,34 @@
+kind: hook
+name: guard-bash
+version: 0.1.0
+description: Block dangerous bash commands (rm -rf, git reset --hard, git push --force, curl|sh, DROP TABLE, fork bomb, dd to raw device) on PreToolUse(Bash). Provides AGENT_HOOK_BASH_YOLO=1 escape hatch.
+domain: code-quality
+priority: P0
+
+compatibility:
+  opencode: native
+  codex: unsupported
+  cursor: adapter
+  kimi: adapter
+
+source:
+  type: local
+  path: registry/guard-bash/source/
+
+hook_events:
+  - PreToolUse
+
+matchers:
+  - "Bash"
+
+triggers:
+  - dangerous command
+  - rm -rf
+  - git reset --hard
+  - force push
+
+requires:
+  binaries: [python3]
+
+links:
+  docs: https://code.claude.com/docs/en/hooks-guide

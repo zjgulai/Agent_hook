@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en" class="bg-zinc-950 text-zinc-100 antialiased">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Handbook · Agent_hook</title>
+  <meta name="description" content="The full Agent_hook reference: 9 hooks × 4 client adapters × manifest schema × test coverage.">
+  <link rel="alternate" hreflang="en" href="https://zjgulai.github.io/Agent_hook/handbook.html">
+  <link rel="alternate" hreflang="x-default" href="https://zjgulai.github.io/Agent_hook/handbook.html">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-dark.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .cmd-block { background: #0a0a0a; border: 1px solid #27272a; }
+    pre code.hljs { background: transparent !important; padding: 0 !important; }
+    .prose-custom h2 { font-size: 1.5rem; font-weight: 700; color: #fafafa; margin-top: 3rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #27272a; }
+    .prose-custom h3 { font-size: 1.25rem; font-weight: 600; color: #e4e4e7; margin-top: 2rem; margin-bottom: 0.75rem; }
+    .prose-custom p { color: #a1a1aa; line-height: 1.7; margin-bottom: 1rem; max-width: 70ch; }
+    .prose-custom code { color: #f59e0b; background: #18181b; padding: 2px 6px; border-radius: 4px; font-size: 0.875em; font-family: ui-monospace,SFMono-Regular,Menlo,monospace; }
+    .prose-custom pre code { color: #e4e4e7; background: transparent; padding: 0; white-space: pre; }
+    .prose-custom ul { color: #a1a1aa; margin-bottom: 1rem; padding-left: 1.5rem; list-style: disc; max-width: 70ch; }
+    .prose-custom ul li { margin: 0.35rem 0; }
+    .prose-custom table { font-size: 0.875rem; color: #a1a1aa; margin: 1.5rem 0; border-collapse: collapse; width: 100%; }
+    .prose-custom th { text-align: left; color: #fafafa; font-weight: 600; border-bottom: 1px solid #3f3f46; padding: 0.75rem; background: #18181b; }
+    .prose-custom td { border-bottom: 1px solid #1f1f23; padding: 0.75rem; vertical-align: top; }
+    .toc { background: #0a0a0a; padding: 1.5rem; border-radius: 0.5rem; border: 1px solid #27272a; margin: 2rem 0; }
+    .toc ul { list-style: none; padding: 0; margin: 0; columns: 2; }
+    .toc a { color: #f59e0b; text-decoration: none; font-size: 0.9rem; }
+    .toc a:hover { text-decoration: underline; }
+    .hook-card { background: #0a0a0a; border-left: 3px solid #f59e0b; padding: 1.25rem 1.5rem; border-radius: 0 0.5rem 0.5rem 0; margin: 1.5rem 0; }
+    .hook-card h3 { margin-top: 0; }
+    .badge-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 0.5rem 0 1rem; }
+    .badge { display: inline-block; font-size: 0.75rem; padding: 2px 10px; border-radius: 10px; font-weight: 500; }
+    .badge.p0 { background: rgba(239,68,68,0.15); color: #ef4444; }
+    .badge.p1 { background: rgba(245,158,11,0.15); color: #f59e0b; }
+    .badge.event { background: rgba(99,102,241,0.15); color: #818cf8; font-family: ui-monospace,SFMono-Regular,Menlo,monospace; }
+  </style>
+</head>
+<body>
+
+<nav class="fixed top-0 inset-x-0 z-50 bg-zinc-950/80 backdrop-blur border-b border-zinc-800">
+  <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+    <a href="./index.html" class="flex items-center gap-2 group">
+      <span class="text-xl">🛡️</span>
+      <span class="font-semibold tracking-tight text-zinc-200 group-hover:text-amber-400 transition-colors">Agent_hook</span>
+    </a>
+    <div class="hidden md:flex items-center gap-6">
+      <a href="./getting-started.html" class="text-zinc-400 hover:text-amber-400 text-sm transition-colors">Getting Started</a>
+      <a href="./handbook.html" class="text-amber-400 text-sm font-medium">Handbook</a>
+      <a href="./architecture.html" class="text-zinc-400 hover:text-amber-400 text-sm transition-colors">Architecture</a>
+      <a href="https://github.com/zjgulai/Agent_hook" target="_blank" rel="noopener" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 rounded-md text-sm text-zinc-200 transition-colors">GitHub →</a>
+      <button id="lang-toggle" onclick="window.i18nToggle()" class="px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 rounded-md text-sm text-zinc-300 transition-colors border border-zinc-700" aria-label="Toggle language">中文</button>
+    </div>
+  </div>
+</nav>
+
+<main class="pt-16 max-w-4xl mx-auto px-6 py-12 prose-custom">
+
+  <p class="text-amber-400 text-sm font-medium tracking-wider">DOCUMENTATION</p>
+  <h1 class="text-4xl md:text-5xl font-bold text-zinc-100 mb-4">The Handbook</h1>
+  <p class="text-xl text-zinc-400 mb-12">Every hook. Every event. Every adapter. Every command.</p>
+
+  <div class="toc">
+    <strong class="text-zinc-200">Contents</strong>
+    <ul>
+      <li><a href="#overview">§1 Overview</a></li>
+      <li><a href="#events">§2 Hook Events</a></li>
+      <li><a href="#hooks">§3 The 9 Hooks</a></li>
+      <li><a href="#evidence">§4 Evidence: real blocking</a></li>
+      <li><a href="#commands">§5 CLI Commands</a></li>
+      <li><a href="#manifest">§6 Manifest Schema</a></li>
+    </ul>
+  </div>
+
+  <section id="overview">
+    <h2>§1 Overview</h2>
+    <p>Agent_hook is the hook layer of a three-repo system:</p>
+    <ul>
+      <li><a href="https://github.com/zjgulai/Agent_skills">Agent_skills</a> — <em>methodology</em>: how the agent thinks (16 skills)</li>
+      <li><strong class="text-zinc-200">Agent_hook</strong> — <em>enforcement</em>: what must happen (9 hooks)</li>
+      <li><a href="https://github.com/zjgulai/Agent_mcp">Agent_mcp</a> — <em>context</em>: what the agent can touch (10 MCPs)</li>
+    </ul>
+    <p>Each hook is a Python script that follows the Claude Code stdin/stdout/exit-2 protocol. Adapters translate it to opencode / cursor / kimi (codex skipped — no hook concept yet).</p>
+  </section>
+
+  <section id="events">
+    <h2>§2 Hook Events</h2>
+    <p>Following the 8 Claude Code hook events:</p>
+    <table>
+      <thead><tr><th>Event</th><th>When it fires</th><th>Return semantics</th></tr></thead>
+      <tbody>
+        <tr><td><code>PreToolUse</code></td><td>Before any tool call (Write/Edit/Bash/...)</td><td>exit 2 = block · exit 0 + JSON = annotate</td></tr>
+        <tr><td><code>PostToolUse</code></td><td>After a tool call succeeded</td><td>exit 0 + JSON = side-effect log</td></tr>
+        <tr><td><code>UserPromptSubmit</code></td><td>When the user sends a message</td><td>JSON.prepend = prepend to prompt</td></tr>
+        <tr><td><code>SessionStart</code></td><td>Each new conversation</td><td>JSON.context = inject context</td></tr>
+        <tr><td><code>Stop</code></td><td>Agent says "done"</td><td>JSON = summary surfaced to user</td></tr>
+        <tr><td><code>SubagentStop</code></td><td>A subagent returns</td><td>JSON.acceptance = ok | needs-review</td></tr>
+        <tr><td><code>Notification</code></td><td>Long task waiting for input</td><td>side-effect (e.g. desktop notify)</td></tr>
+        <tr><td><code>PreCompact</code></td><td>Just before context compaction</td><td>side-effect (e.g. snapshot to disk)</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="hooks">
+    <h2>§3 The 9 Hooks</h2>
+
+    <div class="hook-card">
+      <h3>protect-sensitive-files</h3>
+      <div class="badge-row">
+        <span class="badge p0">P0</span>
+        <span class="badge event">PreToolUse</span>
+      </div>
+      <p><strong class="text-zinc-200">What.</strong> Blocks writes to <code>.env</code>, <code>.env.*</code>, <code>credentials</code>, <code>service-account.json</code>, <code>*.pem</code>, <code>*.key</code>, <code>.aws/credentials</code>, <code>.kube/config</code>, SSH keys, applied migrations.</p>
+      <p><strong class="text-zinc-200">Why.</strong> One bad write = leaked secrets in <code>git log</code> forever. Prompt-only rules fail when the LLM "knows" it's safe.</p>
+      <p><strong class="text-zinc-200">Override.</strong> <code>AGENT_HOOK_ALLOW_SENSITIVE=/intentional/.env:/other/path</code>.</p>
+    </div>
+
+    <div class="hook-card">
+      <h3>guard-bash</h3>
+      <div class="badge-row">
+        <span class="badge p0">P0</span>
+        <span class="badge event">PreToolUse · Bash</span>
+      </div>
+      <p><strong class="text-zinc-200">What.</strong> 17 dangerous patterns: <code>rm -rf</code>, <code>git reset --hard</code>, <code>git push --force</code>, <code>curl | sh</code>, <code>mkfs.*</code>, <code>dd if=...of=/dev/sd*</code>, <code>chmod -R 777</code>, <code>DROP TABLE</code>, fork bombs, raw-device redirects.</p>
+      <p><strong class="text-zinc-200">Conservative bias.</strong> Even <code>echo 'rm -rf is in a string'</code> blocks — LLM might bypass via <code>eval</code>.</p>
+      <p><strong class="text-zinc-200">Override.</strong> <code>AGENT_HOOK_BASH_YOLO=1</code>.</p>
+    </div>
+
+    <div class="hook-card">
+      <h3>post-edit-format</h3>
+      <div class="badge-row">
+        <span class="badge p0">P0</span>
+        <span class="badge event">PostToolUse · Write/Edit</span>
+      </div>
+      <p><strong class="text-zinc-200">What.</strong> Picks formatter by suffix: <code>.ts/.tsx/.js/.jsx</code> → prettier/biome; <code>.py</code> → ruff/black; <code>.go</code> → gofmt; <code>.rs</code> → rustfmt; <code>.sh</code> → shfmt.</p>
+      <p><strong class="text-zinc-200">Graceful.</strong> Skips silently if no formatter installed. <code>AGENT_HOOK_SKIP_FORMAT=1</code> to disable.</p>
+    </div>
+
+    <div class="hook-card">
+      <h3>session-context-injector</h3>
+      <div class="badge-row">
+        <span class="badge p0">P0</span>
+        <span class="badge event">SessionStart</span>
+      </div>
+      <p>Injects git branch, last commit, dirty count, <code>AGENTS.md</code> / <code>CLAUDE.md</code> / <code>README.md</code> presence, active <code>.sisyphus/plans/*.md</code>, python version, platform.</p>
+    </div>
+
+    <div class="hook-card">
+      <h3>final-verify</h3>
+      <div class="badge-row">
+        <span class="badge p0">P0</span>
+        <span class="badge event">Stop</span>
+      </div>
+      <p>Reports changed files (from <code>git status</code>), open TODO/FIXME/XXX/HACK, optional test run (<code>AGENT_HOOK_FINAL_RUN_TESTS=1</code>). Auto-detects pyproject.toml / package.json / Cargo.toml / go.mod.</p>
+    </div>
+
+    <div class="hook-card">
+      <h3>prompt-context-enricher</h3>
+      <div class="badge-row">
+        <span class="badge p1">P1</span>
+        <span class="badge event">UserPromptSubmit</span>
+      </div>
+      <p>Prepends a <code>&lt;project-context&gt;</code> block: branch, last commit, working-tree stats, active plans. Stops the agent from asking what it could just inspect.</p>
+    </div>
+
+    <div class="hook-card">
+      <h3>subagent-acceptance</h3>
+      <div class="badge-row">
+        <span class="badge p1">P1</span>
+        <span class="badge event">SubagentStop</span>
+      </div>
+      <p>Scans the subagent's report for shallow-completion claims (<code>"should work"</code>, <code>"did not run"</code>, <code>"not fully tested"</code>) and incomplete markers (<code>TODO</code>, <code>placeholder</code>, <code>stub</code>). Returns <code>acceptance=needs-review</code> if found.</p>
+    </div>
+
+    <div class="hook-card">
+      <h3>notify-on-idle</h3>
+      <div class="badge-row">
+        <span class="badge p1">P1</span>
+        <span class="badge event">Notification</span>
+      </div>
+      <p>macOS only (uses <code>osascript</code>). Fires <code>display notification</code> when the agent waits for input or finishes a long task.</p>
+    </div>
+
+    <div class="hook-card">
+      <h3>pre-compact-save</h3>
+      <div class="badge-row">
+        <span class="badge p1">P1</span>
+        <span class="badge event">PreCompact</span>
+      </div>
+      <p>Before context compaction, snapshots <code>{branch, last_commit, working_tree, plans, timestamp}</code> to <code>.sisyphus/snapshots/pre-compact-{timestamp}.json</code>. Recovery-friendly.</p>
+    </div>
+  </section>
+
+  <section id="evidence">
+    <h2>§4 Evidence: real blocking</h2>
+    <p>Real <code>node</code> loading the generated opencode plugin, real <code>spawnSync</code> of Python, real exit-2:</p>
+<pre class="cmd-block rounded p-4 mt-3"><code class="language-bash">$ node --input-type=module -e '
+  const mod = await import("/Users/lute/.config/opencode/plugins/agent-hook-protect-sensitive-files.js");
+  const r1 = await mod.default.onPreToolUse({
+    tool: "Write", parameters: { filePath: "/proj/.env" }
+  });
+  console.log(r1);
+'
+
+{
+  block: true,
+  reason: "protect-sensitive-files: blocked write to '/proj/.env'
+           — matches exact name '.env'.
+           Override via AGENT_HOOK_ALLOW_SENSITIVE=path1:path2 if intentional."
+}</code></pre>
+    <p>Recorded in repo at <code>docs/demo/E2E-DEMO.md</code> (in <a href="https://github.com/zjgulai/Agent_skills">Agent_skills</a> for the cross-repo demo).</p>
+  </section>
+
+  <section id="commands">
+    <h2>§5 CLI Commands</h2>
+    <table>
+      <thead><tr><th>Command</th><th>Does</th></tr></thead>
+      <tbody>
+        <tr><td><code>agent-hook list</code></td><td>Tabular view of all 9 hooks × 4 client install states.</td></tr>
+        <tr><td><code>agent-hook install &lt;name&gt; --client all|opencode|cursor|kimi</code></td><td>Generate adapter artifact, write client config, backup, anchor.</td></tr>
+        <tr><td><code>agent-hook uninstall &lt;name&gt; --client all|...</code></td><td>Remove by anchor. Refuse non-managed entries.</td></tr>
+        <tr><td><code>agent-hook doctor</code></td><td>Validate manifests, check binaries on PATH, audit client config consistency.</td></tr>
+        <tr><td><code>agent-hook show &lt;name&gt;</code></td><td>Print manifest as JSON.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="manifest">
+    <h2>§6 Manifest Schema</h2>
+    <p>Identical schema across all 3 source repos (Agent_skills/Agent_hook/Agent_mcp). Validated by <code>agent/lib/manifest.py</code> on every load:</p>
+<pre class="cmd-block rounded p-4 mt-3"><code class="language-yaml">kind: hook                        # required: skill | hook | mcp
+name: protect-sensitive-files     # required: [a-z][a-z0-9-]{1,63}
+version: 0.1.0                    # required: semver
+description: |                    # required: >= 20 chars (WHAT + WHEN)
+  Block writes to sensitive files (.env, secrets.*, credentials, *.pem,
+  applied migrations) on PreToolUse(Write|Edit|MultiEdit). Provides
+  AGENT_HOOK_ALLOW_SENSITIVE escape hatch for intentional cases.
+domain: code-quality              # required
+priority: P0                      # required: P0|P1|P2
+
+compatibility:                    # required: all 4 clients
+  opencode: native
+  codex: unsupported
+  cursor: adapter
+  kimi: adapter
+
+source:
+  type: local                     # local | external | git | npm | pypi
+  path: registry/protect-sensitive-files/source/
+
+hook_events:                      # required when kind=hook
+  - PreToolUse
+
+matchers:
+  - "Write"
+  - "Edit"
+  - "MultiEdit"
+
+requires:
+  binaries: [python3]
+
+triggers: [sensitive file, .env, secret protection]</code></pre>
+    <p>Reject conditions: literal token strings (<code>ghp_*</code>, <code>sk-*</code>, <code>AIza*</code>), unknown <code>hook_events</code>, missing client, wrong source type.</p>
+  </section>
+
+</main>
+
+<script>hljs.highlightAll();</script>
+<script src="./assets/i18n.js" defer></script>
+</body>
+</html>

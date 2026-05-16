@@ -1,0 +1,35 @@
+kind: hook
+name: protect-sensitive-files
+version: 0.1.0
+description: Block writes to sensitive files (.env, secrets.*, credentials, *.pem, applied migrations) on PreToolUse(Write|Edit|MultiEdit). Provides AGENT_HOOK_ALLOW_SENSITIVE escape hatch for intentional cases.
+domain: code-quality
+priority: P0
+
+compatibility:
+  opencode: native
+  codex: unsupported
+  cursor: adapter
+  kimi: adapter
+
+source:
+  type: local
+  path: registry/protect-sensitive-files/source/
+
+hook_events:
+  - PreToolUse
+
+matchers:
+  - "Write"
+  - "Edit"
+  - "MultiEdit"
+
+triggers:
+  - sensitive file
+  - .env
+  - secret protection
+
+requires:
+  binaries: [python3]
+
+links:
+  docs: https://code.claude.com/docs/en/hooks

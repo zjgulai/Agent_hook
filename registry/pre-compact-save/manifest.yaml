@@ -1,0 +1,30 @@
+kind: hook
+name: pre-compact-save
+version: 0.1.0
+description: TODO 20+ char description. Block X on PreToolUse(Y) when condition Z. Provides AGENT_HOOK_pre-compact-save_OVERRIDE escape hatch.
+domain: code-quality
+priority: P1
+
+compatibility:
+  opencode: native
+  codex: unsupported
+  cursor: adapter
+  kimi: adapter
+
+source:
+  type: local
+  path: registry/pre-compact-save/source/
+
+hook_events:
+  - PreCompact
+
+matchers: []
+
+triggers:
+  - TODO
+
+requires:
+  binaries: [python3]
+
+links:
+  docs: https://code.claude.com/docs/en/hooks

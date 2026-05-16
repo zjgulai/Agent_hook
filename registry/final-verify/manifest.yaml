@@ -1,0 +1,30 @@
+kind: hook
+name: final-verify
+version: 0.1.0
+description: At Stop, summarize changed files, surface open TODO/FIXME, and optionally run project tests (pytest/npm test/cargo test/go test). Test execution is opt-in via AGENT_HOOK_FINAL_RUN_TESTS=1 to keep Stop fast by default.
+domain: code-quality
+priority: P0
+
+compatibility:
+  opencode: native
+  codex: unsupported
+  cursor: unsupported
+  kimi: adapter
+
+source:
+  type: local
+  path: registry/final-verify/source/
+
+hook_events:
+  - Stop
+
+triggers:
+  - stop
+  - final check
+  - end-of-task verify
+
+requires:
+  binaries: [python3, git]
+
+links:
+  docs: https://code.claude.com/docs/en/hooks

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en" class="bg-zinc-950 text-zinc-100 antialiased">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Getting Started · Agent_hook</title>
+  <meta name="description" content="Install Agent_hook on a fresh machine in ~5 minutes. Block .env writes and rm -rf across 4 AI CLIs.">
+  <link rel="alternate" hreflang="en" href="https://zjgulai.github.io/Agent_hook/getting-started.html">
+  <link rel="alternate" hreflang="x-default" href="https://zjgulai.github.io/Agent_hook/getting-started.html">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-dark.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .cmd-block { background: #0a0a0a; border: 1px solid #27272a; }
+    pre code.hljs { background: transparent !important; padding: 0 !important; }
+    .prose-custom h2 { font-size: 1.5rem; font-weight: 700; color: #fafafa; margin-top: 3rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #27272a; }
+    .prose-custom h3 { font-size: 1.25rem; font-weight: 600; color: #e4e4e7; margin-top: 2rem; margin-bottom: 0.75rem; }
+    .prose-custom p { color: #a1a1aa; line-height: 1.7; margin-bottom: 1rem; max-width: 70ch; }
+    .prose-custom code { color: #f59e0b; background: #18181b; padding: 2px 6px; border-radius: 4px; font-size: 0.875em; font-family: ui-monospace,SFMono-Regular,Menlo,monospace; }
+    .prose-custom pre code { color: #e4e4e7; background: transparent; padding: 0; white-space: pre; }
+    .prose-custom ul { color: #a1a1aa; margin-bottom: 1rem; padding-left: 1.5rem; list-style: disc; max-width: 70ch; }
+    .prose-custom ul li { margin: 0.35rem 0; }
+    .prose-custom ol { color: #a1a1aa; margin-bottom: 1rem; padding-left: 1.5rem; list-style: decimal; max-width: 70ch; }
+    .prose-custom ol li { margin: 0.35rem 0; }
+    .prose-custom a { color: #f59e0b; text-decoration: underline; text-underline-offset: 2px; }
+    .prose-custom a:hover { color: #fbbf24; }
+    .prose-custom table { font-size: 0.875rem; color: #a1a1aa; margin: 1.5rem 0; border-collapse: collapse; width: 100%; }
+    .prose-custom th { text-align: left; color: #fafafa; font-weight: 600; border-bottom: 1px solid #3f3f46; padding: 0.75rem; background: #18181b; }
+    .prose-custom td { border-bottom: 1px solid #1f1f23; padding: 0.75rem; vertical-align: top; }
+    .step { padding-left: 1.5rem; border-left: 2px solid rgba(245,158,11,0.4); margin-bottom: 2rem; }
+  </style>
+
+  <script>
+    window.I18N_ZH = window.I18N_ZH || {};
+    window.I18N_ZH['getting-started'] = {
+      'nav.getting-started':       '快速开始',
+      'nav.handbook':              '手册',
+      'nav.architecture':          '架构',
+      'nav.github':                'GitHub →',
+      'header.eyebrow':            '文档',
+      'header.title':              '快速开始',
+      'header.subtitle':           '从一台空白机器到 4 个 AI CLI 都装上 hook,约 5 分钟。',
+      'prereq.h':                  '前置条件',
+      'step1.h':                   '1. clone 仓',
+      'step2.h':                   '2. 装一个 hook 到 opencode',
+      'step3.h':                   '3. 验证真实拦截',
+      'step4.h':                   '4. 装到全部 4 个 CLI',
+      'step5.h':                   '5. 体检',
+      'step6.h':                   '6. 查看安装状态',
+      'troubleshoot.h':            '故障排查',
+      'troubleshoot.codex':        'codex 列总是 n/a — 这是预期(codex 暂无原生 hook 概念)',
+      'troubleshoot.cursor':       'cursor 部分 hook 显示 absent — 因为它们的 compat=cursor 标为 unsupported(如 PostToolUse 类) 或没有降级模板',
+      'troubleshoot.kimi':         'kimi 显示 added=False — 已存在,无需重复装',
+      'next.h':                    '下一步',
+    };
+  </script>
+</head>
+<body>
+
+<nav class="fixed top-0 inset-x-0 z-50 bg-zinc-950/80 backdrop-blur border-b border-zinc-800">
+  <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+    <a href="./index.html" class="flex items-center gap-2 group">
+      <span class="text-xl">🛡️</span>
+      <span class="font-semibold tracking-tight text-zinc-200 group-hover:text-amber-400 transition-colors">Agent_hook</span>
+    </a>
+    <div class="hidden md:flex items-center gap-6">
+      <a href="./getting-started.html" class="text-amber-400 text-sm font-medium" data-i18n="nav.getting-started">Getting Started</a>
+      <a href="./handbook.html" class="text-zinc-400 hover:text-amber-400 text-sm transition-colors" data-i18n="nav.handbook">Handbook</a>
+      <a href="./architecture.html" class="text-zinc-400 hover:text-amber-400 text-sm transition-colors" data-i18n="nav.architecture">Architecture</a>
+      <a href="https://github.com/zjgulai/Agent_hook" target="_blank" rel="noopener" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 rounded-md text-sm text-zinc-200 transition-colors" data-i18n="nav.github">GitHub →</a>
+      <button id="lang-toggle" onclick="window.i18nToggle()" class="px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 rounded-md text-sm text-zinc-300 transition-colors border border-zinc-700" aria-label="Toggle language">中文</button>
+    </div>
+  </div>
+</nav>
+
+<main class="pt-16 max-w-4xl mx-auto px-6 py-12 prose-custom">
+
+  <p class="text-amber-400 text-sm font-medium tracking-wider" data-i18n="header.eyebrow">DOCUMENTATION</p>
+  <h1 class="text-4xl md:text-5xl font-bold text-zinc-100 mb-4" data-i18n="header.title">Getting Started</h1>
+  <p class="text-xl text-zinc-400 mb-12" data-i18n="header.subtitle">From a fresh machine to all 4 AI CLIs running hooks — about 5 minutes.</p>
+
+  <h2 data-i18n="prereq.h">Prerequisites</h2>
+  <ul>
+    <li>Python 3.9+ (for hook scripts and CLI)</li>
+    <li>git (for cloning the repo)</li>
+    <li>One or more AI CLIs installed: <code>opencode</code>, <code>cursor</code>, <code>kimi</code> (codex is supported but no-op for hooks)</li>
+  </ul>
+
+  <div class="step">
+    <h2 data-i18n="step1.h">1. Clone the repo</h2>
+<pre class="cmd-block rounded p-4 mt-3"><code class="language-bash">git clone https://github.com/zjgulai/Agent_hook.git ~/project/Agent_hook
+cd ~/project/Agent_hook
+python3 -m pip install --user pyyaml tomli tomli_w</code></pre>
+  </div>
+
+  <div class="step">
+    <h2 data-i18n="step2.h">2. Install a hook to opencode</h2>
+<pre class="cmd-block rounded p-4 mt-3"><code class="language-bash">./bin/agent-hook install protect-sensitive-files --client opencode
+
+# Output:
+[
+  {
+    "client": "opencode",
+    "name": "protect-sensitive-files",
+    "plugin": "/Users/you/.config/opencode/plugins/agent-hook-protect-sensitive-files.js",
+    "backup": null
+  }
+]</code></pre>
+  </div>
+
+  <div class="step">
+    <h2 data-i18n="step3.h">3. Verify real blocking</h2>
+<pre class="cmd-block rounded p-4 mt-3"><code class="language-bash"># Direct hook call (what opencode runtime does internally)
+echo '{"tool":"Write","parameters":{"filePath":"/proj/.env"}}' \
+    | python3 registry/protect-sensitive-files/source/hook.py
+
+# Output: exit code 2 + JSON reason
+{
+  "block": true,
+  "reason": "protect-sensitive-files: blocked write to '/proj/.env'
+             — matches exact name '.env'.
+             Override via AGENT_HOOK_ALLOW_SENSITIVE=path1:path2 if intentional."
+}</code></pre>
+  </div>
+
+  <div class="step">
+    <h2 data-i18n="step4.h">4. Install to all 4 clients</h2>
+<pre class="cmd-block rounded p-4 mt-3"><code class="language-bash">for h in protect-sensitive-files guard-bash post-edit-format \
+         session-context-injector final-verify; do
+  ./bin/agent-hook install "$h" --client all
+done</code></pre>
+    <p>codex is unsupported for hooks (skipped automatically). cursor gets a degraded Rule for the few that have a degradation template. kimi gets a <code>config.toml</code> entry. opencode gets the full JS plugin.</p>
+  </div>
+
+  <div class="step">
+    <h2 data-i18n="step5.h">5. Run doctor</h2>
+<pre class="cmd-block rounded p-4 mt-3"><code class="language-bash">./bin/agent-hook doctor
+
+# Output sections:
+== schema ==
+  ok final-verify v0.1.0
+  ok guard-bash v0.1.0
+  ...
+== source files (executable, no 3rd-party imports) ==
+  ok    final-verify              exec=True  bad-imports=none
+  ...
+== required binaries ==
+  ok    guard-bash                -> python3
+  ...
+== client install status ==
+  opencode: 5 managed by agent-hook (...)
+  codex   : 0 managed by agent-hook (none)
+  cursor  : 3 managed by agent-hook (...)
+  kimi    : 5 managed by agent-hook (...)</code></pre>
+  </div>
+
+  <div class="step">
+    <h2 data-i18n="step6.h">6. List install state</h2>
+<pre class="cmd-block rounded p-4 mt-3"><code class="language-bash">./bin/agent-hook list
+
+# Tabular: name | priority | events | opencode | codex | cursor | kimi
+final-verify              P0  Stop              managed   n/a   absent   managed
+guard-bash                P0  PreToolUse        managed   n/a   managed  managed
+post-edit-format          P0  PostToolUse       managed   n/a   absent   managed
+protect-sensitive-files   P0  PreToolUse        managed   n/a   managed  managed
+session-context-injector  P0  SessionStart      managed   n/a   managed  managed</code></pre>
+  </div>
+
+  <h2 data-i18n="troubleshoot.h">Troubleshooting</h2>
+  <ul>
+    <li><strong class="text-zinc-200" data-i18n="troubleshoot.codex">codex column always n/a</strong> — expected; codex has no native hook concept yet.</li>
+    <li><strong class="text-zinc-200" data-i18n="troubleshoot.cursor">cursor shows absent for some hooks</strong> — those hooks declare <code>cursor: unsupported</code> in manifest (e.g. PostToolUse formatters can't be expressed as Rules) or have no degradation template.</li>
+    <li><strong class="text-zinc-200" data-i18n="troubleshoot.kimi">kimi reports added=False</strong> — already present, idempotent re-install.</li>
+  </ul>
+
+  <h2 data-i18n="next.h">Next</h2>
+  <ul>
+    <li><a href="./handbook.html">The Handbook</a> — every hook explained, with stdin/stdout examples.</li>
+    <li><a href="./architecture.html">Architecture</a> — single-source-of-truth + 4 adapters explained.</li>
+  </ul>
+
+</main>
+
+<script>hljs.highlightAll();</script>
+<script src="./assets/i18n.js" defer></script>
+</body>
+</html>

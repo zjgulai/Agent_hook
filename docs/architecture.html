@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en" class="bg-zinc-950 text-zinc-100 antialiased">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Architecture · Agent_hook</title>
+  <meta name="description" content="One Python script, four adapters: how Agent_hook ships hooks to opencode, codex, cursor, and kimi from a single source of truth.">
+  <link rel="alternate" hreflang="en" href="https://zjgulai.github.io/Agent_hook/architecture.html">
+  <link rel="alternate" hreflang="x-default" href="https://zjgulai.github.io/Agent_hook/architecture.html">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-dark.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .cmd-block { background: #0a0a0a; border: 1px solid #27272a; }
+    pre code.hljs { background: transparent !important; padding: 0 !important; }
+    .prose-custom h2 { font-size: 1.5rem; font-weight: 700; color: #fafafa; margin-top: 3rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #27272a; }
+    .prose-custom h3 { font-size: 1.25rem; font-weight: 600; color: #e4e4e7; margin-top: 2rem; margin-bottom: 0.75rem; }
+    .prose-custom p { color: #a1a1aa; line-height: 1.7; margin-bottom: 1rem; max-width: 70ch; }
+    .prose-custom code { color: #f59e0b; background: #18181b; padding: 2px 6px; border-radius: 4px; font-size: 0.875em; font-family: ui-monospace,SFMono-Regular,Menlo,monospace; }
+    .prose-custom pre code { color: #e4e4e7; background: transparent; padding: 0; white-space: pre; }
+    .prose-custom ul { color: #a1a1aa; margin-bottom: 1rem; padding-left: 1.5rem; list-style: disc; max-width: 70ch; }
+    .prose-custom ul li { margin: 0.35rem 0; }
+    .prose-custom table { font-size: 0.875rem; color: #a1a1aa; margin: 1.5rem 0; border-collapse: collapse; width: 100%; }
+    .prose-custom th { text-align: left; color: #fafafa; font-weight: 600; border-bottom: 1px solid #3f3f46; padding: 0.75rem; background: #18181b; }
+    .prose-custom td { border-bottom: 1px solid #1f1f23; padding: 0.75rem; vertical-align: top; }
+    .ascii { color: #d4d4d4; background: #0a0a0a; padding: 1.5rem; border-radius: 0.5rem; border: 1px solid #27272a; font-family: ui-monospace,SFMono-Regular,Menlo,monospace; white-space: pre; font-size: 0.85rem; line-height: 1.5; overflow-x: auto; }
+  </style>
+
+  <script>
+    window.I18N_ZH = window.I18N_ZH || {};
+    window.I18N_ZH['architecture'] = {
+      'nav.getting-started':       '快速开始',
+      'nav.handbook':              '手册',
+      'nav.architecture':          '架构',
+      'nav.github':                'GitHub →',
+      'header.eyebrow':            '文档',
+      'header.title':              '架构',
+      'header.subtitle':           '一份 Python 脚本 · 四种客户端形态 · 锚点 + 备份保证可逆',
+    };
+  </script>
+</head>
+<body>
+
+<nav class="fixed top-0 inset-x-0 z-50 bg-zinc-950/80 backdrop-blur border-b border-zinc-800">
+  <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+    <a href="./index.html" class="flex items-center gap-2 group">
+      <span class="text-xl">🛡️</span>
+      <span class="font-semibold tracking-tight text-zinc-200 group-hover:text-amber-400 transition-colors">Agent_hook</span>
+    </a>
+    <div class="hidden md:flex items-center gap-6">
+      <a href="./getting-started.html" class="text-zinc-400 hover:text-amber-400 text-sm transition-colors" data-i18n="nav.getting-started">Getting Started</a>
+      <a href="./handbook.html" class="text-zinc-400 hover:text-amber-400 text-sm transition-colors" data-i18n="nav.handbook">Handbook</a>
+      <a href="./architecture.html" class="text-amber-400 text-sm font-medium" data-i18n="nav.architecture">Architecture</a>
+      <a href="https://github.com/zjgulai/Agent_hook" target="_blank" rel="noopener" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 rounded-md text-sm text-zinc-200 transition-colors" data-i18n="nav.github">GitHub →</a>
+      <button id="lang-toggle" onclick="window.i18nToggle()" class="px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 rounded-md text-sm text-zinc-300 transition-colors border border-zinc-700" aria-label="Toggle language">中文</button>
+    </div>
+  </div>
+</nav>
+
+<main class="pt-16 max-w-4xl mx-auto px-6 py-12 prose-custom">
+
+  <p class="text-amber-400 text-sm font-medium tracking-wider" data-i18n="header.eyebrow">DOCUMENTATION</p>
+  <h1 class="text-4xl md:text-5xl font-bold text-zinc-100 mb-4" data-i18n="header.title">Architecture</h1>
+  <p class="text-xl text-zinc-400 mb-12" data-i18n="header.subtitle">One Python script · four client shapes · anchor + backup keep it reversible.</p>
+
+  <h2>Top-down map</h2>
+  <pre class="ascii">┌─────────────────────────────────────────────────────────────────────┐
+│  Agent_hook (this repo)                                             │
+│                                                                     │
+│  registry/&lt;name&gt;/                ← single source of truth           │
+│    ├── manifest.yaml             ← schema-validated metadata        │
+│    ├── source/hook.py            ← Python stdin/stdout/exit-2       │
+│    └── tests/                                                       │
+│                                                                     │
+│  agent/lib/                                                         │
+│    ├── manifest.py               ← shared schema (byte-id 3 repos)  │
+│    ├── adapter_opencode.py       ← JS plugin generator              │
+│    ├── adapter_codex.py          ← always skip (no-op)              │
+│    ├── adapter_cursor.py         ← degrade-to-Rule mapper           │
+│    ├── adapter_kimi.py           ← config.toml hooks=[] writer      │
+│    └── cli.py                    ← agent-hook list/install/...      │
+│                                                                     │
+└────────────────────┬───────────────────────────────────────────────-┘
+                     │ writes (with cp .bak.{ts} + managed-by anchor)
+                     ▼
+       ┌─────────────┴────────────┬──────────────┬──────────────────┐
+       ▼                          ▼              ▼                  ▼
+~/.config/opencode/         ~/.codex/      ~/.cursor/         ~/.kimi/
+  plugins/                   (no-op)       rules/             config.toml
+  agent-hook-&lt;name&gt;.js                    agent-hook-&lt;name&gt;.mdc  hooks=[...]</pre>
+
+  <h2>The 4-client compatibility matrix</h2>
+  <table>
+    <thead><tr><th>Hook event</th><th>opencode</th><th>codex</th><th>cursor</th><th>kimi</th></tr></thead>
+    <tbody>
+      <tr><td>PreToolUse (Write/Edit)</td><td>native</td><td>unsupported</td><td>adapter (Rule)</td><td>adapter</td></tr>
+      <tr><td>PreToolUse (Bash)</td><td>native</td><td>unsupported</td><td>adapter (Rule)</td><td>adapter</td></tr>
+      <tr><td>PostToolUse</td><td>native</td><td>unsupported</td><td>unsupported</td><td>adapter</td></tr>
+      <tr><td>UserPromptSubmit</td><td>native</td><td>unsupported</td><td>adapter</td><td>adapter</td></tr>
+      <tr><td>SessionStart</td><td>native</td><td>unsupported</td><td>adapter (Rule)</td><td>adapter</td></tr>
+      <tr><td>SubagentStop</td><td>native</td><td>unsupported</td><td>unsupported</td><td>adapter</td></tr>
+      <tr><td>Notification</td><td>native</td><td>unsupported</td><td>unsupported</td><td>adapter</td></tr>
+      <tr><td>PreCompact</td><td>native</td><td>unsupported</td><td>unsupported</td><td>adapter</td></tr>
+      <tr><td>Stop</td><td>native</td><td>unsupported</td><td>unsupported</td><td>adapter</td></tr>
+    </tbody>
+  </table>
+
+  <h2>The opencode adapter (the most interesting)</h2>
+  <p>For opencode we generate a JS plugin file at <code>~/.config/opencode/plugins/agent-hook-&lt;name&gt;.js</code>. The JS plugin acts as a thin wrapper that spawns the real Python on every event, passing event JSON via stdin:</p>
+<pre class="cmd-block rounded p-4 mt-3"><code class="language-javascript">// managed-by: agent-hook · protect-sensitive-files · 2026-05-16T...
+// Source: /Users/lute/project/Agent/Agent_hook/registry/protect-sensitive-files/source/hook.py
+import { spawnSync } from "node:child_process";
+
+const HOOK_NAME   = "protect-sensitive-files";
+const PYTHON      = "/usr/bin/python3";
+const HOOK_SCRIPT = "/Users/lute/.../registry/protect-sensitive-files/source/hook.py";
+
+function callHook(event) {
+  const proc = spawnSync(PYTHON, [HOOK_SCRIPT], {
+    input: JSON.stringify(event), encoding: "utf8", timeout: 15000
+  });
+  return {
+    blocked: proc.status === 2,
+    payload: proc.stdout ? JSON.parse(proc.stdout) : null,
+    stderr:  (proc.stderr || "").trim(),
+  };
+}
+
+export async function onPreToolUse({ tool, parameters }) {
+  if (!["Write","Edit","MultiEdit"].some(m => new RegExp(m).test(tool))) return null;
+  const res = callHook({ event: "PreToolUse", tool, parameters });
+  return res.blocked ? { block: true, reason: res.stderr } : res.payload;
+}</code></pre>
+
+  <h2>The cursor adapter (degradation)</h2>
+  <p>Cursor has no native hooks — only Rules (always-applied system prompts). We can express <em>some</em> hook behaviors as soft constraints, but never enforce them:</p>
+  <ul>
+    <li><strong class="text-zinc-200">Mappable to Rule:</strong> protect-sensitive-files (don't write &lt;X&gt;), guard-bash (don't run &lt;Y&gt;), session-context-injector (always remember &lt;Z&gt;).</li>
+    <li><strong class="text-zinc-200">Cannot degrade:</strong> post-edit-format (Rule can't trigger a command), final-verify (Rule can't run code at Stop), pre-compact-save (no PreCompact concept in cursor), subagent-acceptance (no subagent return-value parsing), notify-on-idle (no Notification event).</li>
+  </ul>
+
+  <h2>The kimi adapter</h2>
+  <p>kimi has a <code>hooks=[]</code> array in <code>~/.kimi/config.toml</code>. We append entries like:</p>
+<pre class="cmd-block rounded p-4 mt-3"><code class="language-toml">[[hooks]]
+name = "protect-sensitive-files"
+events = ["PreToolUse"]
+matchers = ["Write", "Edit", "MultiEdit"]
+command = ["/usr/bin/python3", "/path/to/registry/protect-sensitive-files/source/hook.py"]
+managed_by = "agent-hook"</code></pre>
+
+  <h2>Reversibility guarantees</h2>
+  <p>Every write to a client config follows the same protocol:</p>
+  <ol>
+    <li><code>cp &lt;target&gt; &lt;target&gt;.bak.{timestamp}</code> before any change.</li>
+    <li>Write the new content with a <code>managed-by: agent-hook</code> anchor.</li>
+    <li><code>prune_backups(keep=5)</code> so backups don't accumulate forever.</li>
+    <li>On uninstall, check the anchor — refuse to delete entries that aren't ours (e.g. user-written plugins).</li>
+  </ol>
+
+  <h2>Test coverage</h2>
+  <ul>
+    <li><strong class="text-zinc-200">28 schema tests</strong> — manifest validation, required fields, hook_events whitelist, secret-literal rejection.</li>
+    <li><strong class="text-zinc-200">39 behavior tests</strong> — every hook tested end-to-end with stdin/stdout via CLI subprocess.</li>
+    <li><strong class="text-zinc-200">14 adapter tests</strong> — install / uninstall round-trips for each of the 4 adapters, sibling protection, anchor refusal.</li>
+    <li><strong class="text-zinc-200">Total: 81 tests, all green</strong>.</li>
+  </ul>
+
+  <h2>Why this shape</h2>
+  <p>Prompt-only enforcement fails when the LLM <em>thinks</em> it knows better. Hook code that the runtime is forced to call before the destructive action — and that returns <code>exit 2</code> — is the only deterministic mechanism. The bet of Agent_hook is that every team will arrive at this same conclusion, and we can save them the boilerplate.</p>
+
+</main>
+
+<script>hljs.highlightAll();</script>
+<script src="./assets/i18n.js" defer></script>
+</body>
+</html>

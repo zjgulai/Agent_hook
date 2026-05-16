@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en" class="bg-zinc-950 text-zinc-100 antialiased">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agent_hook — Claude Code style hooks for opencode / cursor / kimi</title>
+  <meta name="description" content="Single source of truth for AI agent hooks. Python scripts → 4 client adapters (opencode/codex/cursor/kimi). Real PreToolUse blocking, real Stop verification, zero third-party deps.">
+  <meta property="og:title" content="Agent_hook · enforcement layer for AI agents">
+  <meta property="og:description" content="Block writes to .env, kill rm -rf, format on save, snapshot before compact — across 4 AI CLIs with one Python script per hook.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://zjgulai.github.io/Agent_hook/">
+  <link rel="alternate" hreflang="en" href="https://zjgulai.github.io/Agent_hook/index.html">
+  <link rel="alternate" hreflang="x-default" href="https://zjgulai.github.io/Agent_hook/index.html">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-dark.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .gradient-bg {
+      background:
+        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(245,158,11,0.15), transparent 50%),
+        radial-gradient(ellipse 60% 50% at 80% 10%, rgba(239,68,68,0.10), transparent 50%);
+    }
+    .cmd-block { background: #0a0a0a; border: 1px solid #27272a; }
+    pre code.hljs { background: transparent !important; padding: 0 !important; }
+    .nav-link { color: #a1a1aa; transition: color 150ms; font-size: 14px; font-weight: 500; }
+    .nav-link:hover { color: #f59e0b; }
+    .nav-link.active { color: #f59e0b; }
+  </style>
+
+  <script>
+    window.I18N_ZH = window.I18N_ZH || {};
+    window.I18N_ZH['index'] = {
+      'nav.getting-started':       '快速开始',
+      'nav.handbook':              '手册',
+      'nav.architecture':          '架构',
+      'nav.github':                'GitHub →',
+      'hero.badge':                'v0.1 · 9 hooks · 4 clients · 81 tests green',
+      'hero.title':                '把质量与安全做成<br><span class="text-amber-400">确定性流程</span>。',
+      'hero.subtitle':             'Agent_hook 是 4 个 AI CLI（opencode / codex / cursor / kimi）共用的 hook 源仓库。<span class="text-zinc-200">Claude Code 风格 Python 脚本</span>—— 一份源码，四种适配。Block 危险 bash、保护 .env、格式化产出、Stop 时跑测试 —— 用代码而不是 prompt 强制执行。',
+      'hero.cta-start':            '快速开始 →',
+      'hero.cta-github':           '查看 GitHub',
+      'hero.cta-arch':             '查看架构 →',
+      'demo.eyebrow':              '真实证据',
+      'demo.title':                '真 node 加载，真 Python 拦截，真退出码 2。',
+      'demo.desc':                 '不是 mock。<code class="text-amber-400">opencode</code> 真实 spawn <code class="text-amber-400">python3 hook.py</code>，stdin/stdout/exit-code 协议与 Claude Code 一致。LLM 试图写 <code class="text-amber-400">.env</code> 时被 hook return <code class="text-amber-400">{block: true, reason: ...}</code> 拦下。',
+      'demo.cta':                  '查看完整手册 →',
+      'cmds.eyebrow':              '9 个 HOOK',
+      'cmds.title':                '从 SessionStart 到 PreCompact，事件全覆盖。',
+      'cmds.cta':                  '完整 hook 参考 →',
+      'cmds.protect-desc':         'PreToolUse 拦写 .env / *.pem / credentials / migrations',
+      'cmds.guard-desc':           'PreToolUse 拦 rm -rf / git reset --hard / curl|sh / DROP TABLE',
+      'cmds.format-desc':          'PostToolUse 自动跑 prettier / ruff / gofmt / shfmt',
+      'cmds.session-desc':         'SessionStart 注入 git branch / last commit / 活动 plans',
+      'cmds.final-desc':           'Stop 给出 changed_files / open TODOs / 测试结果',
+      'cmds.prompt-desc':          'UserPromptSubmit 追加 issue / 分支 / 工作树状态',
+      'cmds.subagent-desc':        'SubagentStop 扫报告抓 "should work" / "did not run"',
+      'cmds.notify-desc':          'Notification 走 macOS osascript 弹通知',
+      'cmds.compact-desc':         'PreCompact 把计划 / TODO / 状态写盘以便恢复',
+      'arch.eyebrow':              '4 适配器架构',
+      'arch.title':                '一份 Python 脚本，四种客户端形态。',
+      'arch.desc':                 '<strong class="text-zinc-200">opencode</strong> 收到 JS plugin（包装真 Python），<strong class="text-zinc-200">cursor</strong> 收到降级的 Rule（软约束），<strong class="text-zinc-200">kimi</strong> 收到 config.toml 的 hooks=[] 条目，<strong class="text-zinc-200">codex</strong> 暂无 hook 概念跳过。每个 hook 在 manifest 里显式声明 4 客户端的 native/adapter/unsupported。',
+      'arch.cta':                  '查看完整架构 →',
+      'who.title':                 '为不想被 LLM 失误炸掉项目的人而做。',
+      'who.bullet1-h':             '你的 .env 不能被改',
+      'who.bullet1':               'protect-sensitive-files 用 stdin/stdout/exit-2 真实拦下，不是 prompt 哄。',
+      'who.bullet2-h':             '你的项目不接受 rm -rf',
+      'who.bullet2':               '17 条危险模式 + 3 个 escape hatch 环境变量。',
+      'who.bullet3-h':             '你想把 Stop 变成质量门',
+      'who.bullet3':               'final-verify 给变更摘要 + 残留 TODO + 可选测试运行。',
+      'cta-final.title':           '一键装到 4 客户端。',
+      'cta-final.desc':            'agent-hook install final-verify --client all。每次写客户端配置都带时间戳备份 + managed-by 锚点。',
+      'cta-final.button':          '开始安装指南 →',
+      'footer.tagline':            'Agent_hook · MIT 风格使用，欢迎署名',
+    };
+  </script>
+</head>
+<body>
+
+<nav class="fixed top-0 inset-x-0 z-50 bg-zinc-950/80 backdrop-blur border-b border-zinc-800">
+  <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+    <a href="./index.html" class="flex items-center gap-2 group">
+      <span class="text-xl">🛡️</span>
+      <span class="font-semibold tracking-tight text-zinc-200 group-hover:text-amber-400 transition-colors">Agent_hook</span>
+    </a>
+    <div class="hidden md:flex items-center gap-6">
+      <a href="./getting-started.html" class="text-zinc-400 hover:text-amber-400 text-sm transition-colors" data-i18n="nav.getting-started">Getting Started</a>
+      <a href="./handbook.html" class="text-zinc-400 hover:text-amber-400 text-sm transition-colors" data-i18n="nav.handbook">Handbook</a>
+      <a href="./architecture.html" class="text-zinc-400 hover:text-amber-400 text-sm transition-colors" data-i18n="nav.architecture">Architecture</a>
+      <a href="https://github.com/zjgulai/Agent_hook" target="_blank" rel="noopener" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 rounded-md text-sm text-zinc-200 transition-colors" data-i18n="nav.github">GitHub →</a>
+      <button id="lang-toggle" onclick="window.i18nToggle()" class="px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 rounded-md text-sm text-zinc-300 transition-colors border border-zinc-700" aria-label="Toggle language">中文</button>
+    </div>
+  </div>
+</nav>
+
+<main class="pt-16">
+
+<section class="gradient-bg">
+  <div class="max-w-6xl mx-auto px-6 py-24 md:py-32">
+    <div class="max-w-3xl">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-medium mb-6">
+        <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+        <span data-i18n="hero.badge">v0.1 · 9 hooks · 4 clients · 81 tests green</span>
+      </div>
+
+      <h1 class="text-5xl md:text-7xl font-bold tracking-tight text-zinc-100 mb-6" data-i18n-html="hero.title">
+        Make quality and safety<br>
+        a <span class="text-amber-400">deterministic flow</span>.
+      </h1>
+
+      <p class="text-xl text-zinc-400 leading-relaxed mb-8" data-i18n-html="hero.subtitle">
+        Agent_hook is the shared hook source repo for 4 AI CLIs (opencode / codex / cursor / kimi).
+        <span class="text-zinc-200">Claude Code-style Python scripts</span> — one source, four adapters.
+        Block dangerous bash, protect <code class="text-amber-400">.env</code>, format on save,
+        run tests on Stop — enforced by code, not by prompt.
+      </p>
+
+      <div class="flex flex-wrap gap-3">
+        <a href="./getting-started.html" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-zinc-950 rounded-md font-medium transition-colors" data-i18n="hero.cta-start">
+          Get Started →
+        </a>
+        <a href="https://github.com/zjgulai/Agent_hook" target="_blank" rel="noopener" class="px-5 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-md font-medium transition-colors" data-i18n="hero.cta-github">
+          View on GitHub
+        </a>
+        <a href="./architecture.html" class="px-5 py-2.5 text-zinc-400 hover:text-amber-400 rounded-md font-medium transition-colors" data-i18n="hero.cta-arch">
+          See Architecture →
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="border-t border-zinc-900">
+  <div class="max-w-6xl mx-auto px-6 py-20">
+    <div class="grid md:grid-cols-2 gap-12 items-center">
+      <div>
+        <p class="text-amber-400 text-sm font-medium mb-2 tracking-wider" data-i18n="demo.eyebrow">REAL EVIDENCE</p>
+        <h2 class="text-3xl font-bold mb-4 text-zinc-100" data-i18n="demo.title">Real node load. Real Python block. Real exit 2.</h2>
+        <p class="text-zinc-400 mb-6 leading-relaxed" data-i18n-html="demo.desc">
+          Not mock. <code class="text-amber-400">opencode</code> truly spawns
+          <code class="text-amber-400">python3 hook.py</code>, talking the same
+          stdin/stdout/exit-code protocol as Claude Code. When the LLM tries to write
+          <code class="text-amber-400">.env</code>, the hook returns
+          <code class="text-amber-400">{block: true, reason: ...}</code> and the write is refused.
+        </p>
+        <a href="./handbook.html#evidence" class="text-amber-400 hover:text-amber-300 font-medium" data-i18n="demo.cta">
+          Read the handbook →
+        </a>
+      </div>
+      <div class="cmd-block rounded-lg p-5 font-mono text-sm">
+<pre><code class="language-bash">$ echo '{"tool":"Write","parameters":{"filePath":"/proj/.env"}}' \
+    | python3 registry/protect-sensitive-files/source/hook.py
+{
+  "block": true,
+  "reason": "protect-sensitive-files: blocked write to '/proj/.env'
+             — matches exact name '.env'. Override via
+             AGENT_HOOK_ALLOW_SENSITIVE=path1:path2 if intentional."
+}
+$ echo $?
+2</code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="border-t border-zinc-900 bg-zinc-950">
+  <div class="max-w-6xl mx-auto px-6 py-20">
+    <p class="text-amber-400 text-sm font-medium mb-2 tracking-wider" data-i18n="cmds.eyebrow">9 HOOKS</p>
+    <h2 class="text-3xl font-bold mb-12 text-zinc-100" data-i18n="cmds.title">From SessionStart to PreCompact — full event coverage.</h2>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div class="p-5 bg-zinc-900/50 border border-zinc-800 rounded-lg hover:border-amber-500/30 transition-colors">
+        <code class="text-amber-400 font-mono text-sm">protect-sensitive-files</code>
+        <p class="text-zinc-400 text-sm mt-2" data-i18n="cmds.protect-desc">PreToolUse blocks .env / *.pem / credentials / migrations.</p>
+      </div>
+      <div class="p-5 bg-zinc-900/50 border border-zinc-800 rounded-lg hover:border-amber-500/30 transition-colors">
+        <code class="text-amber-400 font-mono text-sm">guard-bash</code>
+        <p class="text-zinc-400 text-sm mt-2" data-i18n="cmds.guard-desc">PreToolUse blocks rm -rf, git reset --hard, curl|sh, DROP TABLE.</p>
+      </div>
+      <div class="p-5 bg-zinc-900/50 border border-zinc-800 rounded-lg hover:border-amber-500/30 transition-colors">
+        <code class="text-amber-400 font-mono text-sm">post-edit-format</code>
+        <p class="text-zinc-400 text-sm mt-2" data-i18n="cmds.format-desc">PostToolUse runs prettier / ruff / gofmt / shfmt.</p>
+      </div>
+      <div class="p-5 bg-zinc-900/50 border border-zinc-800 rounded-lg hover:border-amber-500/30 transition-colors">
+        <code class="text-amber-400 font-mono text-sm">session-context-injector</code>
+        <p class="text-zinc-400 text-sm mt-2" data-i18n="cmds.session-desc">SessionStart injects branch / last commit / active plans.</p>
+      </div>
+      <div class="p-5 bg-zinc-900/50 border border-zinc-800 rounded-lg hover:border-amber-500/30 transition-colors">
+        <code class="text-amber-400 font-mono text-sm">final-verify</code>
+        <p class="text-zinc-400 text-sm mt-2" data-i18n="cmds.final-desc">Stop reports changed files / open TODOs / test results.</p>
+      </div>
+      <div class="p-5 bg-zinc-900/50 border border-zinc-800 rounded-lg hover:border-amber-500/30 transition-colors">
+        <code class="text-amber-400 font-mono text-sm">prompt-context-enricher</code>
+        <p class="text-zinc-400 text-sm mt-2" data-i18n="cmds.prompt-desc">UserPromptSubmit appends issue / branch / working-tree state.</p>
+      </div>
+      <div class="p-5 bg-zinc-900/50 border border-zinc-800 rounded-lg hover:border-amber-500/30 transition-colors">
+        <code class="text-amber-400 font-mono text-sm">subagent-acceptance</code>
+        <p class="text-zinc-400 text-sm mt-2" data-i18n="cmds.subagent-desc">SubagentStop catches "should work" / "did not run" patterns.</p>
+      </div>
+      <div class="p-5 bg-zinc-900/50 border border-zinc-800 rounded-lg hover:border-amber-500/30 transition-colors">
+        <code class="text-amber-400 font-mono text-sm">notify-on-idle</code>
+        <p class="text-zinc-400 text-sm mt-2" data-i18n="cmds.notify-desc">Notification fires macOS osascript desktop alerts.</p>
+      </div>
+      <div class="p-5 bg-zinc-900/50 border border-zinc-800 rounded-lg hover:border-amber-500/30 transition-colors">
+        <code class="text-amber-400 font-mono text-sm">pre-compact-save</code>
+        <p class="text-zinc-400 text-sm mt-2" data-i18n="cmds.compact-desc">PreCompact snapshots plans / TODOs / state for recovery.</p>
+      </div>
+    </div>
+
+    <div class="mt-8 text-center">
+      <a href="./handbook.html#hooks" class="text-amber-400 hover:text-amber-300 font-medium" data-i18n="cmds.cta">
+        Full hook reference →
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="border-t border-zinc-900">
+  <div class="max-w-6xl mx-auto px-6 py-20">
+    <div class="grid md:grid-cols-2 gap-12 items-center">
+      <div class="order-2 md:order-1 cmd-block rounded-lg p-5 font-mono text-sm">
+<pre><code class="language-bash">$ agent-hook list
+name                      events            opencode  cursor   kimi
+final-verify              Stop              managed   absent   managed
+guard-bash                PreToolUse        managed   managed  managed
+post-edit-format          PostToolUse       managed   absent   managed
+protect-sensitive-files   PreToolUse        managed   managed  managed
+session-context-injector  SessionStart      managed   managed  managed</code></pre>
+      </div>
+      <div class="order-1 md:order-2">
+        <p class="text-amber-400 text-sm font-medium mb-2 tracking-wider" data-i18n="arch.eyebrow">4-CLIENT ADAPTERS</p>
+        <h2 class="text-3xl font-bold mb-4 text-zinc-100" data-i18n="arch.title">One Python script, four client shapes.</h2>
+        <p class="text-zinc-400 mb-6 leading-relaxed" data-i18n-html="arch.desc">
+          <strong class="text-zinc-200">opencode</strong> gets a JS plugin wrapping the real Python.
+          <strong class="text-zinc-200">cursor</strong> gets a degraded Rule (soft constraint).
+          <strong class="text-zinc-200">kimi</strong> gets a config.toml hooks=[] entry.
+          <strong class="text-zinc-200">codex</strong> has no native hook concept and is skipped.
+          Each hook explicitly declares native/adapter/unsupported per client in its manifest.
+        </p>
+        <a href="./architecture.html" class="text-amber-400 hover:text-amber-300 font-medium" data-i18n="arch.cta">
+          See the full architecture →
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="border-t border-zinc-900 bg-zinc-950">
+  <div class="max-w-6xl mx-auto px-6 py-20">
+    <h2 class="text-3xl font-bold mb-12 text-center text-zinc-100" data-i18n="who.title">Built for people who don't want LLM mistakes to nuke the repo.</h2>
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="p-6">
+        <div class="text-3xl mb-3">🔒</div>
+        <h3 class="font-semibold text-zinc-100 mb-2" data-i18n="who.bullet1-h">Your .env can't be touched</h3>
+        <p class="text-zinc-400 text-sm" data-i18n="who.bullet1">protect-sensitive-files uses stdin/stdout/exit-2 to actually block writes — not prompt-cajole.</p>
+      </div>
+      <div class="p-6">
+        <div class="text-3xl mb-3">⛔</div>
+        <h3 class="font-semibold text-zinc-100 mb-2" data-i18n="who.bullet2-h">Your repo refuses rm -rf</h3>
+        <p class="text-zinc-400 text-sm" data-i18n="who.bullet2">17 dangerous patterns + 3 env-var escape hatches when you really need them.</p>
+      </div>
+      <div class="p-6">
+        <div class="text-3xl mb-3">✅</div>
+        <h3 class="font-semibold text-zinc-100 mb-2" data-i18n="who.bullet3-h">You want Stop to be a quality gate</h3>
+        <p class="text-zinc-400 text-sm" data-i18n="who.bullet3">final-verify returns changed-files summary, residual TODOs, optional test run.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="border-t border-zinc-900 gradient-bg">
+  <div class="max-w-4xl mx-auto px-6 py-20 text-center">
+    <h2 class="text-4xl font-bold mb-4 text-zinc-100" data-i18n="cta-final.title">One command, four clients.</h2>
+    <p class="text-zinc-400 mb-8 text-lg" data-i18n="cta-final.desc">
+      <code class="text-amber-400">agent-hook install final-verify --client all</code>.
+      Every write to a client config gets a timestamped backup and a managed-by anchor.
+    </p>
+    <a href="./getting-started.html" class="inline-block px-6 py-3 bg-amber-500 hover:bg-amber-400 text-zinc-950 rounded-md font-medium transition-colors" data-i18n="cta-final.button">
+      Start the install guide →
+    </a>
+  </div>
+</section>
+
+<footer class="border-t border-zinc-900 bg-zinc-950">
+  <div class="max-w-6xl mx-auto px-6 py-10 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-zinc-500">
+    <div class="flex items-center gap-2">
+      <span>🛡️</span>
+      <span data-i18n="footer.tagline">Agent_hook · MIT-style use, attribution welcomed</span>
+    </div>
+    <div class="flex items-center gap-4">
+      <a href="https://github.com/zjgulai/Agent_hook" target="_blank" rel="noopener" class="hover:text-amber-400 transition-colors">GitHub</a>
+      <a href="https://github.com/zjgulai/Agent_hook/issues" target="_blank" rel="noopener" class="hover:text-amber-400 transition-colors">Issues</a>
+      <a href="./architecture.html" class="hover:text-amber-400 transition-colors" data-i18n="nav.architecture">Architecture</a>
+    </div>
+  </div>
+</footer>
+
+</main>
+
+<script>hljs.highlightAll();</script>
+<script src="./assets/i18n.js" defer></script>
+</body>
+</html>
