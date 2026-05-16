@@ -42,6 +42,9 @@ def test_opencode_install_creates_plugin(isolated_paths):
     text = plugin.read_text()
     assert "managed-by: agent-hook · protect-sensitive-files" in text
     assert "spawnSync" in text
+    assert "tool.execute.before" in text
+    assert "export const AgentHook_ProtectSensitiveFiles" in text
+    assert "throw new Error" in text
     assert "PreToolUse" in text
     assert "Write" in text
 
