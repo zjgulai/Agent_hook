@@ -2,7 +2,7 @@ kind: hook
 name: protect-sensitive-files
 version: 0.1.0
 description: Block writes to sensitive files (.env, secrets.*, credentials, *.pem, applied migrations) on PreToolUse(Write|Edit|MultiEdit). Provides AGENT_HOOK_ALLOW_SENSITIVE escape hatch for intentional cases.
-domain: code-quality
+domain: closeout
 priority: P0
 
 compatibility:

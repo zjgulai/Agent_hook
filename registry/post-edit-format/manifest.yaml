@@ -2,7 +2,7 @@ kind: hook
 name: post-edit-format
 version: 0.1.0
 description: After Write/Edit/MultiEdit, auto-run the project's formatter (prettier, biome, ruff, black, gofmt, rustfmt, shfmt) on the touched file based on suffix. Skip silently if no formatter is installed. Override AGENT_HOOK_SKIP_FORMAT=1.
-domain: code-quality
+domain: closeout
 priority: P0
 
 compatibility:

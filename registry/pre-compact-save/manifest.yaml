@@ -2,7 +2,7 @@ kind: hook
 name: pre-compact-save
 version: 0.1.0
 description: TODO 20+ char description. Block X on PreToolUse(Y) when condition Z. Provides AGENT_HOOK_pre-compact-save_OVERRIDE escape hatch.
-domain: code-quality
+domain: closeout
 priority: P1
 
 compatibility:

@@ -17,7 +17,7 @@ Schema (kind ∈ {skill, hook, mcp}):
     name:           kebab-case-name                                REQUIRED
     version:        semver string                                  REQUIRED
     description:    >= 20 chars (WHAT + WHEN)                      REQUIRED
-    domain:         meta|code-quality|desktop|founder|frontend|research|data|ops|general  REQUIRED
+    domain:         meta|closeout|desktop|founder|ip|tooling       REQUIRED
     priority:       P0|P1|P2                                       REQUIRED
     compatibility:  dict with keys opencode/codex/cursor/kimi      REQUIRED
                     each value ∈ {native, adapter, unsupported}
@@ -52,14 +52,11 @@ KINDS = {"skill", "hook", "mcp"}
 PRIORITIES = {"P0", "P1", "P2"}
 DOMAINS = {
     "meta",
-    "code-quality",
+    "closeout",
     "desktop",
     "founder",
-    "frontend",
-    "research",
-    "data",
-    "ops",
-    "general",
+    "ip",
+    "tooling",
 }
 CLIENTS = {"opencode", "codex", "cursor", "kimi"}
 COMPAT_VALUES = {"native", "adapter", "unsupported"}

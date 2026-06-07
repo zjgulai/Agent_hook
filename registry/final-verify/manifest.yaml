@@ -2,7 +2,7 @@ kind: hook
 name: final-verify
 version: 0.1.0
 description: At Stop, summarize changed files, surface open TODO/FIXME, and optionally run project tests (pytest/npm test/cargo test/go test). Test execution is opt-in via AGENT_HOOK_FINAL_RUN_TESTS=1 to keep Stop fast by default.
-domain: code-quality
+domain: closeout
 priority: P0
 
 compatibility:
